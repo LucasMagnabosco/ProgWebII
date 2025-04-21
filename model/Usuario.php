@@ -77,6 +77,11 @@ class Usuario {
         $this->telefone = $telefone;
     }
 
+    public function setSenha($senha) {
+        $this->senha = md5($senha);
+    }
+    public function getSenha() { return $this->senha; }
+
     public function adicionarEndereco($endereco) {
         $this->endereco = $endereco;
         return $this;
@@ -90,6 +95,9 @@ class Usuario {
         $this->descricao = $descricao;
     }
 
+    public function setEndereco($endereco) {
+        $this->endereco = $endereco;
+    }
 
     // Verificação de tipo
     public function isCliente(): bool {

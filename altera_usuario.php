@@ -7,12 +7,13 @@ $nome = @$_POST["nome"];
 $telefone = @$_POST["telefone"];
 $tipo = @$_POST["tipo"];
 
-// Hash da senha usando md5
 $senhaHash = md5($senha);
 
 $usuario = new Usuario($nome, $login, $senhaHash, $telefone, $tipo);
+
 $dao = $factory->getUsuarioDao();
-$dao->insere($usuario);
+$dao->altera($usuario);
+
 
 header("Location: usuarios.php");
 exit;

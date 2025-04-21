@@ -17,9 +17,6 @@
 
 <body>
 	<header>
-		<div class="pull-left" id="logo">
-			<img src="images/LogoUCS.png" width=80 height=80/>
-		</div>
 		<h1><?=$page_title?></h1>
 		<div class="pull-right" id="login_info">
 		<?php	

@@ -1,48 +1,70 @@
-<?php
-$page_title = "Inserção de Usuário";
-// layout do cabeçalho
-include_once "layout_header.php";
-?>
-<section>
-<form action="insere_usuario.php" method="post">
-    <table class='table table-hover table-responsive table-bordered'>
-        <tr>
-            <td>Nome</td>
-            <td><input type='text' name='nome' class='form-control' required /></td>
-        </tr>
-        <tr>
-            <td>Email</td>
-            <td><input type='email' name='email' class='form-control' required /></td>
-        </tr>
-        <tr>
-            <td>Senha</td>
-            <td><input type='password' name='senha' class='form-control' required /></td>
-        </tr>
-        <tr>
-            <td>Telefone</td>
-            <td><input type='tel' name='telefone' class='form-control' required /></td>
-        </tr>
-        <tr>
-            <td>Tipo</td>
-            <td>
-                <select name='tipo' class='form-control' required>
-                    <option value='cliente'>Cliente</option>
-                    <option value='fornecedor'>Fornecedor</option>
-                </select>
-            </td>
-        </tr>
-        <tr>
-            <td></td>
-            <td>
-                <button type="submit" class="btn btn-primary">Cadastrar</button>
-                <a href="index.php" class="btn btn-default">Cancelar</a>
-            </td>
-        </tr>
-    </table>
-</form>
-</section>
-<?php
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Usuário</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .container {
+            margin-top: 100px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="text-center">Cadastro de Usuário</h3>
+                    </div>
+                    <div class="card-body">
+                        <form action="insere_usuario.php" method="post">
+                            <div class="mb-3">
+                                <label for="nome" class="form-label">Nome</label>
+                                <input type="text" id="nome" name="nome" class="form-control" required />
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" id="email" name="email" class="form-control" required />
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="senha" class="form-label">Senha</label>
+                                <input type="password" id="senha" name="senha" class="form-control" required />
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="telefone" class="form-label">Telefone</label>
+                                <input type="tel" id="telefone" name="telefone" class="form-control" required />
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="tipo" class="form-label">Tipo</label>
+                                <select id="tipo" name="tipo" class="form-control" required>
+                                    <option value="cliente">Cliente</option>
+                                    <option value="fornecedor">Fornecedor</option>
+                                </select>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">Cadastrar</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card-footer text-center">
+                        <a href="index.php" class="btn btn-link">Cancelar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
 
-?>
+
 
 

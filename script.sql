@@ -1,6 +1,5 @@
-
 CREATE TABLE enderecos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     rua VARCHAR(255) NOT NULL,
     numero VARCHAR(20) NOT NULL,
     complemento VARCHAR(100),
@@ -12,28 +11,29 @@ CREATE TABLE enderecos (
 
 
 CREATE TABLE usuarios (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     nome VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     senha VARCHAR(255) NOT NULL,
     telefone VARCHAR(20) NOT NULL,
     endereco_id INT,
-    tipo ENUM('cliente', 'fornecedor') NOT NULL,
+    tipo VARCHAR(20) NOT NULL,
     cartao_credito VARCHAR(19),
     descricao TEXT,
     FOREIGN KEY (endereco_id) REFERENCES enderecos(id)
 );
 
 CREATE TABLE produtos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     nome VARCHAR(255) NOT NULL,
     descricao TEXT,
-    foto LONGBLOB
+    preco DECIMAL(10,2) NOT NULL,
+    foto VARCHAR(255)
 );
 
 
 CREATE TABLE estoques (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     produto_id INT NOT NULL,
     quantidade INT NOT NULL DEFAULT 0,
     preco DECIMAL(10,2) NOT NULL DEFAULT 0.00,

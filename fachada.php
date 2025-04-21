@@ -5,7 +5,7 @@ include_once('model/Endereco.php');
 include_once('model/Produto.php');
 include_once('model/Estoque.php');
 
-include_once('dao/EndereçoDao.php');
+include_once('dao/EnderecoDao.php');
 include_once('dao/UsuarioDao.php');
 include_once('dao/DaoFactory.php');
 include_once('dao/PostgresDaoFactory.php');
