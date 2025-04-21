@@ -1,22 +1,23 @@
 <?php
 
 class Endereco {
-    private string $rua;
-    private string $numero;
-    private string $complemento;
-    private string $bairro;
-    private string $cep;
-    private string $cidade;
-    private string $estado;
+    private $rua;
+    private $numero;
+    private $complemento;
+    private $bairro;
+    private $cep;
+    private $cidade;
+    private $estado;
+    private $id;
 
     public function __construct(
-        string $rua = "",
-        string $numero = "",
-        string $complemento = "",
-        string $bairro = "",
-        string $cep = "",
-        string $cidade = "",
-        string $estado = ""
+        $rua = "",
+        $numero = "",
+        $complemento = "",
+        $bairro = "",
+        $cep = "",
+        $cidade = "",
+        $estado = ""
     ) {
         $this->rua = $rua;
         $this->numero = $numero;
@@ -28,32 +29,68 @@ class Endereco {
     }
 
     // Getters
-    public function getRua(): string {return $this->rua;}
+    public function getRua() {
+        return $this->rua;
+    }
 
-    public function getNumero(): string {return $this->numero;}
+    public function getNumero() {
+        return $this->numero;
+    }
 
-    public function getComplemento(): string {return $this->complemento;}
+    public function getComplemento() {
+        return $this->complemento;
+    }
 
-    public function getBairro(): string {return $this->bairro;}
+    public function getBairro() {
+        return $this->bairro;
+    }
 
-    public function getCep(): string {return $this->cep;}
+    public function getCep() {
+        return $this->cep;
+    }
 
-    public function getCidade(): string {return $this->cidade;}
+    public function getCidade() {
+        return $this->cidade;
+    }
 
-    public function getEstado(): string {return $this->estado;}
+    public function getEstado() {
+        return $this->estado;
+    }
+
+    public function getId() {
+        return $this->id;
+    }
 
     // Setters
-    public function setRua(string $rua): void {$this->rua = $rua;}
+    public function setRua($rua) {
+        $this->rua = $rua;
+    }
 
-    public function setNumero(string $numero): void {$this->numero = $numero;}
+    public function setNumero($numero) {
+        $this->numero = $numero;
+    }
 
-    public function setComplemento(string $complemento): void {$this->complemento = $complemento;}
+    public function setComplemento($complemento) {
+        $this->complemento = $complemento;
+    }
 
-    public function setBairro(string $bairro): void {$this->bairro = $bairro;}
+    public function setBairro($bairro) {
+        $this->bairro = $bairro;
+    }
 
-    public function setCep(string $cep): void {$this->cep = $cep;}
+    public function setCep($cep) {
+        $this->cep = $cep;
+    }
 
-    public function setCidade(string $cidade): void {$this->cidade = $cidade;}
+    public function setCidade($cidade) {
+        $this->cidade = $cidade;
+    }
 
-    public function setEstado(string $estado): void { $this->estado = $estado;}
+    public function setEstado($estado) {
+        $this->estado = $estado;
+    }
+
+    public function setId($id) {
+        $this->id = $id;
+    }
 } 

@@ -1,12 +1,12 @@
 <?php
 
 class Produto {
-    private string $nome;
-    private string $descricao;
-    private string $foto;
+    private $nome;
+    private $descricao;
+    private $foto;
     private ?Estoque $estoque = null;
 
-    public function __construct(string $nome, string $descricao, string $foto) {
+    public function __construct($nome, $descricao, $foto) {
         $this->nome = $nome;
         $this->descricao = $descricao;
         $this->foto = $foto;

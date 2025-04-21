@@ -1,29 +1,103 @@
 <?php
-class Usuario {
-    
-    private $id;
-    private $login;
-    private $senha;
-    private $nome;
 
-    public function __construct( $id, $login, $senha, $nome)
-    {
-        $this->id=$id;
-        $this->login=$login;
-        $this->senha=$senha;
-        $this->nome=$nome;
+class Usuario {
+    private $id;
+    private $nome;
+    private $email;
+    private $senha;
+    private $telefone;
+    private $endereco = null;
+    private $tipo; // 'cliente' ou 'fornecedor'
+    private $cartaoCredito = null;
+    private $descricao = null;
+
+    public function __construct(
+        $nome,
+        $email,
+        $senha,
+        $telefone,
+        $tipo,
+        ?string $cartaoCredito = null,
+        ?string $descricao = null,
+        ?Endereco $endereco = null
+    ) {
+        $this->nome = $nome;
+        $this->email = $email;
+        $this->senha = $senha;
+        $this->telefone = $telefone;
+        $this->tipo = $tipo;
+        $this->cartaoCredito = $cartaoCredito;
+        $this->descricao = $descricao;
+        $this->endereco = $endereco;
     }
 
-    public function getId() { return $this->id; }
-    public function setId($id) {$this->id = $id;}
+    // Getters
+    public function getId(): int {
+        return $this->id;
+    }
 
-    public function getLogin() { return $this->login; }
-    public function setLogin($login) {$this->login = $login;}
+    public function getNome(): string {
+        return $this->nome;
+    }
 
-    public function getNome() { return $this->nome; }
-    public function setNome($nome) {$this->nome = $nome;}
+    public function getEmail(): string {
+        return $this->email;
+    }
 
-    public function getSenha() { return $this->senha; }
-    public function setSenha($senha) {$this->senha = $senha;}
+    public function getTelefone(): string {
+        return $this->telefone;
+    }
+
+    public function getEndereco(): ?Endereco {
+        return $this->endereco;
+    }
+
+    public function getTipo(): string {
+        return $this->tipo;
+    }
+
+    public function getCartaoCredito(): ?string {
+        return $this->cartaoCredito;
+    }
+
+    public function getDescricao(): ?string {
+        return $this->descricao;
+    }
+
+    // Setters
+    public function setNome(string $nome): void {
+        $this->nome = $nome;
+    }
+
+    public function setEmail(string $email): void {
+        $this->email = $email;
+    }
+
+    public function setTelefone(string $telefone): void {
+        $this->telefone = $telefone;
+    }
+
+    public function adicionarEndereco($endereco) {
+        $this->endereco = $endereco;
+        return $this;
+    }
+
+    public function setCartaoCredito(?string $cartaoCredito): void {
+        $this->cartaoCredito = $cartaoCredito;
+    }
+
+    public function setDescricao(?string $descricao): void {
+        $this->descricao = $descricao;
+    }
+
+
+    // Verificação de tipo
+    public function isCliente(): bool {
+        return $this->tipo === 'cliente';
+    }
+
+    public function isFornecedor(): bool {
+        return $this->tipo === 'fornecedor';
+    }
 }
 ?>

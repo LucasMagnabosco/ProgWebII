@@ -1,36 +1,40 @@
 <?php
 
 class Estoque {
-    private int $quantidade;
-    private float $preco;
+    private $quantidade;
+    private $preco;
     private Produto $produto;
 
-    public function __construct(Produto $produto, int $quantidade = 0, float $preco = 0.0) {
+    public function __construct(Produto $produto, $quantidade = 0, $preco = 0.0) {
         $this->produto = $produto;
         $this->quantidade = $quantidade;
         $this->preco = $preco;
     }
 
     // Getters
-    public function getQuantidade(): int {
+    public function getQuantidade() {
         return $this->quantidade;
     }
 
-    public function getPreco(): float {
+    public function getPreco() {
         return $this->preco;
     }
 
-    public function getProduto(): Produto {
+    public function getProduto() {
         return $this->produto;
     }
 
     // Setters
-    public function setQuantidade(int $quantidade): void {
+    public function setQuantidade($quantidade) {
         $this->quantidade = $quantidade;
     }
 
-    public function setPreco(float $preco): void {
+    public function setPreco($preco) {
         $this->preco = $preco;
+    }
+
+    public function setProduto($produto) {
+        $this->produto = $produto;
     }
 
     // Métodos
@@ -46,7 +50,7 @@ class Estoque {
         }
     }
 
-    public function calcularValorTotal(): float {
+    public function calcularValorTotal() {
         return $this->quantidade * $this->preco;
     }
 } 
