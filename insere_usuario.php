@@ -1,15 +1,17 @@
 <?php
-include_once "fachada.php";
+include_once 'fachada.php';
 
-$login = @$_GET["email"];
-$senha = @$_GET["senha"];
-$nome = @$_GET["nome"];
+$login = @$_POST["email"];
+$senha = @$_POST["senha"];
+$nome = @$_POST["nome"];
+$telefone = @$_POST["telefone"];
+$tipo = @$_POST["tipo"];
 
-$usuario = new Usuario(null,$login,$senha,$nome);
+$usuario = new Usuario(nome,$email,$senha,$telefone, $tipo);
 $dao = $factory->getUsuarioDao();
 $dao->insere($usuario);
 
-header("Location: usuarios.php");
+//header("Location: usuarios.php");
 exit;
 
 ?>
