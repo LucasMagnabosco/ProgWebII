@@ -23,7 +23,7 @@ try {
     $usuario = new Usuario($nome, $email, $senhaHash, $telefone, $tipo);
     
     if ($dao->insere($usuario)) {
-        header("Location: index.php?msg=Usuário cadastrado com sucesso");
+        header("Location: login.php?msg=Usuário cadastrado com sucesso");
     } else {
         header("Location: novo_usuario.php?msg=Erro ao cadastrar usuário");
     }

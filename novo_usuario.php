@@ -59,7 +59,7 @@
                         </form>
                     </div>
                     <div class="card-footer text-center">
-                        <a href="index.php" class="btn btn-link">Cancelar</a>
+                        <a href="login.php" class="btn btn-link">Cancelar</a>
                     </div>
                 </div>
             </div>
