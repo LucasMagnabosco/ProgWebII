@@ -5,11 +5,6 @@ include_once 'fachada.php';
 $msg = isset($_GET['msg']) ? $_GET['msg'] : '';
 
 
-if (isset($_SESSION['usuario'])) {
-    header("Location: usuarios.php");
-    exit;
-}
-
 
 ?>
 <!DOCTYPE html>
@@ -34,11 +29,11 @@ if (isset($_SESSION['usuario'])) {
                         <h3 class="text-center">Login</h3>
                     </div>
                     <div class="card-body">
-                        <?php if ($msg): ?>
-                            <div class="alert alert-danger"><?php echo $msg; ?></div>
+                        <?php if (isset($_GET['msg'])): ?>
+                            <div class="alert alert-danger"><?php echo htmlspecialchars($_GET['msg']); ?></div>
                         <?php endif; ?>
                         
-                        <form method="post" action="login.php">
+                        <form method="post" action="executa_login.php">
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email</label>
                                 <input type="email" class="form-control" id="email" name="email" required>
