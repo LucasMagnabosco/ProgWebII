@@ -4,32 +4,13 @@ include_once 'fachada.php';
 
 $msg = isset($_GET['msg']) ? $_GET['msg'] : '';
 
-// Se já estiver logado, redireciona para a página principal
+
 if (isset($_SESSION['usuario'])) {
     header("Location: usuarios.php");
     exit;
 }
 
-// Processa o login se o formulário foi submetido
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $email = $_POST['email'];
-    $senha = $_POST['senha'];
-    
-    try {
-        $fachada = new Fachada();
-        $usuario = $fachada->buscarUsuarioPorEmail($email);
-        
-        if ($usuario && md5($senha) === $usuario->getSenha()) {
-            $_SESSION['usuario'] = $usuario;
-            header("Location: usuarios.php");
-            exit;
-        } else {
-            $msg = "Email ou senha inválidos";
-        }
-    } catch(Exception $e) {
-        $msg = $e->getMessage();
-    }
-}
+
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -57,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <div class="alert alert-danger"><?php echo $msg; ?></div>
                         <?php endif; ?>
                         
-                        <form method="post" action="index.php">
+                        <form method="post" action="login.php">
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email</label>
                                 <input type="email" class="form-control" id="email" name="email" required>

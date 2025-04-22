@@ -1,20 +1,33 @@
 <?php
 include_once 'fachada.php';
 
-$login = @$_POST["email"];
-$senha = @$_POST["senha"];
-$nome = @$_POST["nome"];
-$telefone = @$_POST["telefone"];
-$tipo = @$_POST["tipo"];
+// Recebe os dados do formulário
+$nome = $_POST['nome'];
+$email = $_POST['email'];
+$senha = $_POST['senha'];
+$telefone = $_POST['telefone'];
+$tipo = $_POST['tipo'];
 
-// Hash da senha usando md5
-$senhaHash = md5($senha);
-
-$usuario = new Usuario($nome, $login, $senhaHash, $telefone, $tipo);
-$dao = $factory->getUsuarioDao();
-$dao->insere($usuario);
-
-header("Location: usuarios.php");
-exit;
-
+try {
+    $dao = $factory->getUsuarioDao();
+    
+    // Verifica se o email já existe
+    $usuarioExistente = $dao->buscaPorEmail($email);
+    if ($usuarioExistente) {
+        header("Location: novo_usuario.php?msg=Email já cadastrado no sistema");
+        exit;
+    }
+    
+    // Se o email não existe, prossegue com a inserção
+    $senhaHash = md5($senha);
+    $usuario = new Usuario($nome, $email, $senhaHash, $telefone, $tipo);
+    
+    if ($dao->insere($usuario)) {
+        header("Location: index.php?msg=Usuário cadastrado com sucesso");
+    } else {
+        header("Location: novo_usuario.php?msg=Erro ao cadastrar usuário");
+    }
+} catch(Exception $e) {
+    header("Location: novo_usuario.php?msg=" . $e->getMessage());
+}
 ?>

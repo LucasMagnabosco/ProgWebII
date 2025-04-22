@@ -20,6 +20,10 @@
                         <h3 class="text-center">Cadastro de Usuário</h3>
                     </div>
                     <div class="card-body">
+                        <?php if (isset($_GET['msg'])): ?>
+                            <div class="alert alert-danger"><?php echo htmlspecialchars($_GET['msg']); ?></div>
+                        <?php endif; ?>
+                        
                         <form action="insere_usuario.php" method="post">
                             <div class="mb-3">
                                 <label for="nome" class="form-label">Nome</label>
