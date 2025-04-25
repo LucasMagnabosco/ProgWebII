@@ -23,11 +23,14 @@ try {
     $usuario = new Usuario($nome, $email, $senhaHash, $telefone, $tipo);
     
     if ($dao->insere($usuario)) {
-        header("Location: login.php?msg=Usuário cadastrado com sucesso");
+        header("Location: login.php?msg=Usuário cadastrado com sucesso&tipo=success");
+        // header("Location: login.php?msg=Usuário cadastrado com sucesso");
     } else {
-        header("Location: novo_usuario.php?msg=Erro ao cadastrar usuário");
+        header("Location: novo_usuario.php?msg=Email já cadastrado no sistema&tipo=danger");
+        // header("Location: novo_usuario.php?msg=Erro ao cadastrar usuário");
     }
 } catch(Exception $e) {
-    header("Location: novo_usuario.php?msg=" . $e->getMessage());
+    header("Location: novo_usuario.php?msg=" . urlencode($e->getMessage()) . "&tipo=danger");
+    // header("Location: novo_usuario.php?msg=" . $e->getMessage());
 }
 ?>

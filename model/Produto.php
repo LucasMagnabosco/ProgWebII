@@ -4,43 +4,29 @@ class Produto {
     private $nome;
     private $descricao;
     private $foto;
-    private ?Estoque $estoque = null;
+    private $fornecedor_id;
 
-    public function __construct($nome, $descricao, $foto) {
+    public function __construct($nome, $descricao, $foto = null, $fornecedor_id) {
         $this->nome = $nome;
         $this->descricao = $descricao;
         $this->foto = $foto;
+        $this->fornecedor_id = $fornecedor_id;
     }
 
-    public function getNome(): string {
+    // Getters e setters para os atributos
+    public function getNome() {
         return $this->nome;
     }
 
-    public function getDescricao(): string {
+    public function getDescricao() {
         return $this->descricao;
     }
 
-    public function getFoto(): string {
+    public function getFoto() {
         return $this->foto;
     }
 
-    public function getEstoque(): ?Estoque {
-        return $this->estoque;
-    }
-
-    public function setNome(string $nome): void {
-        $this->nome = $nome;
-    }
-
-    public function setDescricao(string $descricao): void {
-        $this->descricao = $descricao;
-    }
-
-    public function setFoto(string $foto): void {
-        $this->foto = $foto;
-    }
-
-    public function setEstoque(Estoque $estoque): void {
-        $this->estoque = $estoque;
+    public function getFornecedorId() {
+        return $this->fornecedor_id;
     }
 }

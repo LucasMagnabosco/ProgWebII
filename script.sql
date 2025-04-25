@@ -1,4 +1,4 @@
-CREATE TABLE enderecos (
+CREATE TABLE endereco (
     id SERIAL PRIMARY KEY,
     rua VARCHAR(255) NOT NULL,
     numero VARCHAR(20) NOT NULL,
@@ -10,7 +10,17 @@ CREATE TABLE enderecos (
 );
 
 
-CREATE TABLE usuarios (
+CREATE TABLE fornecedor (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    cnpj VARCHAR(20) NOT NULL UNIQUE,
+    telefone VARCHAR(20),
+    email VARCHAR(255),
+    endereco_id INT,
+    FOREIGN KEY (endereco_id) REFERENCES endereco(id)
+);
+
+CREATE TABLE usuario (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
@@ -20,22 +30,24 @@ CREATE TABLE usuarios (
     tipo VARCHAR(20) NOT NULL,
     cartao_credito VARCHAR(19),
     descricao TEXT,
-    FOREIGN KEY (endereco_id) REFERENCES enderecos(id)
+    FOREIGN KEY (endereco_id) REFERENCES endereco(id)
 );
 
-CREATE TABLE produtos (
+
+CREATE TABLE produto (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(255) NOT NULL,
     descricao TEXT,
-    preco DECIMAL(10,2) NOT NULL,
-    foto VARCHAR(255)
+    foto VARCHAR(255),
+    fornecedor_id INT NOT NULL,
+    FOREIGN KEY (fornecedor_id) REFERENCES fornecedor(id)
 );
 
 
-CREATE TABLE estoques (
+CREATE TABLE estoque (
     id SERIAL PRIMARY KEY,
     produto_id INT NOT NULL,
     quantidade INT NOT NULL DEFAULT 0,
     preco DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-    FOREIGN KEY (produto_id) REFERENCES produtos(id)
-); 
+    FOREIGN KEY (produto_id) REFERENCES produto(id)
+);

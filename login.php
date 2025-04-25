@@ -30,8 +30,17 @@ $msg = isset($_GET['msg']) ? $_GET['msg'] : '';
                     </div>
                     <div class="card-body">
                         <?php if (isset($_GET['msg'])): ?>
-                            <div class="alert alert-danger"><?php echo htmlspecialchars($_GET['msg']); ?></div>
+                            <?php
+                                $tipo = $_GET['tipo'] ?? 'danger'; // padrão: danger
+                            ?>
+                            <div class="alert alert-<?php echo $tipo; ?>">
+                                <?php echo htmlspecialchars($_GET['msg']); ?>
+                            </div>
                         <?php endif; ?>
+
+                        <!-- <?php if (isset($_GET['msg'])): ?>
+                            <div class="alert alert-danger"><?php echo htmlspecialchars($_GET['msg']); ?></div>
+                        <?php endif; ?> -->
                         
                         <form method="post" action="executa_login.php">
                             <div class="mb-3">
