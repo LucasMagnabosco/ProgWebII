@@ -1,8 +1,15 @@
 <?php
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405); // Método não permitido
+    exit('Método de requisição inválido');
+}
+
 include_once '../../fachada.php';
 
 // Verifica se foi enviado via POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    // var_dump($_SERVER);
     header("Location: produtos.php?msg=Método de requisição inválido");
     exit;
 }
@@ -11,6 +18,15 @@ $nome = $_POST['nome'];
 $descricao = $_POST['descricao'];
 $fornecedor_id = $_POST['fornecedor_id'];
 $foto = $_FILES['foto'] ?? null;
+
+echo '<pre>';
+echo "Nome: $nome\n";
+echo "Descrição: $descricao\n";
+echo "Fornecedor ID: $fornecedor_id\n";
+echo "Foto:\n";
+print_r($foto);
+echo '</pre>';
+
 
 try {
     // Verificação e tratamento da imagem
@@ -32,7 +48,8 @@ try {
     }
 
     // Criação do objeto Produto
-    $produto = new Produto($nome, $descricao, $fotoPath, $fornecedor_id);
+    $produto = new Produto(nome: $nome, descricao: $descricao, fornecedor_id: $fornecedor_id, foto: $fotoPath);
+    var_dump($produto);
 
     // Inserção no banco de dados
     $dao = $factory->getProdutoDao(); 
@@ -40,8 +57,8 @@ try {
     if ($dao->insere($produto)) {
         header("Location: produtos.php?msg=Produto cadastrado com sucesso&tipo=success");
     } else {
-        header("Location: insere_produto.php?msg=Erro ao cadastrar produto&tipo=danger");
+        header("Location: produtos.php?msg=Erro ao cadastrar produto&tipo=danger");
     }
 } catch (Exception $e) {
-    header("Location: insere_produto.php?msg=" . urlencode($e->getMessage()) . "&tipo=danger");
+    header("Location: produtos.php?msg=" . urlencode($e->getMessage()) . "&tipo=danger");
 }
