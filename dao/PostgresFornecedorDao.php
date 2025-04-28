@@ -1,10 +1,10 @@
 <?php
 
 include_once('FornecedorDao.php');
-include_once ('../../model/Fornecedor.php'); 
+include_once('PostgresDao.php');
+//include_once('../model/Fornecedor.php');
 
-class PostgresFornecedorDao implements FornecedorDao {
-    private $pdo;
+class PostgresFornecedorDao extends PostgresDao implements FornecedorDao {
 
     public function __construct($pdo) {
         $this->pdo = $pdo;

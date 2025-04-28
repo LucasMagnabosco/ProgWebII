@@ -2,10 +2,12 @@
 
 include_once('UsuarioDao.php');
 include_once('PostgresDao.php');
+include_once(dirname(__FILE__) . '/../model/Usuario.php');
+include_once('PostgresEnderecoDao.php');
 
 class PostgresUsuarioDao extends PostgresDao implements UsuarioDao {
 
-    private $table_name = 'usuarios';
+    private $table_name = 'usuario';
     
     public function insere($usuario) {
         $query = "INSERT INTO " . $this->table_name . 
@@ -124,6 +126,7 @@ class PostgresUsuarioDao extends PostgresDao implements UsuarioDao {
             $row['descricao'],
             $endereco
         );
+        $usuario->setId($row['id']);
         return $usuario;
     }
 
