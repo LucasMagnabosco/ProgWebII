@@ -32,19 +32,19 @@ class Usuario {
     }
 
     // Getters
-    public function getId(): int {
+    public function getId() {
         return $this->id;
     }
 
-    public function getNome(): string {
+    public function getNome() {
         return $this->nome;
     }
 
-    public function getEmail(): string {
+    public function getEmail() {
         return $this->email;
     }
 
-    public function getTelefone(): string {
+    public function getTelefone() {
         return $this->telefone;
     }
 
@@ -52,46 +52,52 @@ class Usuario {
         return $this->endereco;
     }
 
-    public function getTipo(): string {
+    public function getTipo(){
         return $this->tipo;
     }
 
-    public function getCartaoCredito(): ?string {
+    public function getCartaoCredito() {
         return $this->cartaoCredito;
     }
 
-    public function getDescricao(): ?string {
+    public function getDescricao() {
         return $this->descricao;
     }
 
+    public function getSenha() { return $this->senha; }
+
     // Setters
-    public function setNome(string $nome): void {
+    public function setNome(string $nome) {
         $this->nome = $nome;
     }
 
-    public function setEmail(string $email): void {
+    public function setEmail(string $email) {
         $this->email = $email;
     }
 
-    public function setTelefone(string $telefone): void {
+    public function setTelefone(string $telefone) {
         $this->telefone = $telefone;
     }
 
     public function setSenha($senha) {
         $this->senha = md5($senha);
     }
-    public function getSenha() { return $this->senha; }
+
+    public function setId($id) {
+        $this->id = $id;
+        return $this;
+    }
 
     public function adicionarEndereco($endereco) {
         $this->endereco = $endereco;
         return $this;
     }
 
-    public function setCartaoCredito(?string $cartaoCredito): void {
+    public function setCartaoCredito(?string $cartaoCredito) {
         $this->cartaoCredito = $cartaoCredito;
     }
 
-    public function setDescricao(?string $descricao): void {
+    public function setDescricao(?string $descricao) {
         $this->descricao = $descricao;
     }
 

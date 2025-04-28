@@ -1,7 +1,7 @@
 <?php
+session_start();
 include_once 'fachada.php';
 
-// Recebe os dados do formulário
 $nome = $_POST['nome'];
 $email = $_POST['email'];
 $senha = $_POST['senha'];
@@ -11,26 +11,28 @@ $tipo = $_POST['tipo'];
 try {
     $dao = $factory->getUsuarioDao();
     
-    // Verifica se o email já existe
     $usuarioExistente = $dao->buscaPorEmail($email);
     if ($usuarioExistente) {
-        header("Location: novo_usuario.php?msg=Email já cadastrado no sistema");
+        header("Location: novo_usuario.php?msg=Email já cadastrado no sistema&tipo=danger");
         exit;
     }
     
-    // Se o email não existe, prossegue com a inserção
     $senhaHash = md5($senha);
     $usuario = new Usuario($nome, $email, $senhaHash, $telefone, $tipo);
     
     if ($dao->insere($usuario)) {
-        header("Location: login.php?msg=Usuário cadastrado com sucesso&tipo=success");
-        // header("Location: login.php?msg=Usuário cadastrado com sucesso");
+        $usuarioCriado = $dao->buscaPorEmail($email);
+        if ($usuarioCriado) {
+            $_SESSION['usuario_id'] = $usuarioCriado->getId();
+            $_SESSION['usuario_nome'] = $usuarioCriado->getNome();
+            header("Location: novo_endereco.php");
+        } else {
+            header("Location: novo_usuario.php?msg=Erro ao cadastrar usuário&tipo=danger");
+        }
     } else {
-        header("Location: novo_usuario.php?msg=Email já cadastrado no sistema&tipo=danger");
-        // header("Location: novo_usuario.php?msg=Erro ao cadastrar usuário");
+        header("Location: novo_usuario.php?msg=Erro ao cadastrar usuário&tipo=danger");
     }
 } catch(Exception $e) {
-    header("Location: novo_usuario.php?msg=" . urlencode($e->getMessage()) . "&tipo=danger");
-    // header("Location: novo_usuario.php?msg=" . $e->getMessage());
+    header("Location: novo_usuario.php?msg=" . $e->getMessage() . "&tipo=danger");
 }
 ?>

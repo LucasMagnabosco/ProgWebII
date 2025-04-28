@@ -30,9 +30,6 @@ $msg = isset($_GET['msg']) ? $_GET['msg'] : '';
                     </div>
                     <div class="card-body">
                         <?php if (isset($_GET['msg'])): ?>
-                            <?php
-                                $tipo = $_GET['tipo'] ?? 'danger'; // padrão: danger
-                            ?>
                             <div class="alert alert-<?php echo $tipo; ?>">
                                 <?php echo htmlspecialchars($_GET['msg']); ?>
                             </div>
