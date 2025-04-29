@@ -1,5 +1,6 @@
+<!-- view -->
 <?php
-include_once '../../fachada.php';
+include_once '../fachada.php';
 
 $produtoDao = $factory->getProdutoDao();
 $fornecedorDao = $factory->getFornecedorDao();

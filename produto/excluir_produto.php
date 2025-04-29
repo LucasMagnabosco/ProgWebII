@@ -1,5 +1,6 @@
+<!-- controller -->
 <?php
-include_once '../../fachada.php';
+include_once '../fachada.php';
 
 if (!isset($_GET['id'])) {
     header("Location: produtos.php?msg=ID do produto não especificado&tipo=danger");

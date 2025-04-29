@@ -1,3 +1,4 @@
+<!-- controller -->
 <?php
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -5,7 +6,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit('Método de requisição inválido');
 }
 
-include_once '../../fachada.php';
+include_once '../fachada.php';
 
 // Verifica se foi enviado via POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

@@ -1,5 +1,6 @@
+<!-- view -->
 <?php
-include_once '../../fachada.php';
+include_once '../fachada.php';
 
 // Busca todos os produtos cadastrados
 $produtoDao = $factory->getProdutoDao();
@@ -13,6 +14,13 @@ $produtos = $produtoDao->buscaTodos();
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Lista de Produtos</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+    /* Estilo para destacar texto */
+    .highlight {
+        background-color: yellow;
+        font-weight: bold;
+    }
+    </style>
 </head>
 <body class="bg-light">
     <div class="container mt-5">
@@ -20,14 +28,13 @@ $produtos = $produtoDao->buscaTodos();
             <h3 class="text-center">Lista de Produtos</h3>
             <a href="cadastra_produto.php" class="btn btn-success position-absolute end-0 top-0">Cadastrar Novo Produto</a>
         </div>
-        <!-- <?php if (isset($_GET['msg'])): ?>
-            <div class="alert alert-<?= htmlspecialchars($_GET['tipo'] ?? 'info') ?> alert-dismissible fade show" role="alert">
-                <?= htmlspecialchars($_GET['msg']) ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
-            </div>
-        <?php endif; ?> -->
 
-        <table class="table table-striped">
+        <!-- Campo de Pesquisa -->
+        <div class="mb-3">
+            <input type="text" id="pesquisa" class="form-control" placeholder="Pesquisar produtos..." onkeyup="filtrarTabela()" />
+        </div>
+
+        <table class="table table-striped" id="tabelaProdutos">
             <thead>
                 <tr>
                     <th>Nome</th>
@@ -51,6 +58,44 @@ $produtos = $produtoDao->buscaTodos();
             </tbody>
         </table>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Script de filtro e destaque -->
+    <script>
+    function filtrarTabela() {
+        var input = document.getElementById("pesquisa");
+        var filtro = input.value.toLowerCase();
+        var tabela = document.getElementById("tabelaProdutos");
+        var trs = tabela.getElementsByTagName("tr");
+
+        for (var i = 1; i < trs.length; i++) { // Começa do 1 para pular o cabeçalho
+            var tds = trs[i].getElementsByTagName("td");
+            if (tds.length > 0) {
+                var nomeOriginal = tds[0].textContent;
+                var descricaoOriginal = tds[1].textContent;
+
+                var nome = nomeOriginal.toLowerCase();
+                var descricao = descricaoOriginal.toLowerCase();
+
+                if (nome.includes(filtro) || descricao.includes(filtro)) {
+                    trs[i].style.display = "";
+
+                    // Destacar texto encontrado
+                    tds[0].innerHTML = destacarTexto(nomeOriginal, filtro);
+                    tds[1].innerHTML = destacarTexto(descricaoOriginal, filtro);
+                } else {
+                    trs[i].style.display = "none";
+                }
+            }
+        }
+    }
+
+    function destacarTexto(texto, filtro) {
+        if (!filtro) return texto; // Se filtro vazio, não destaca
+        var regex = new RegExp("(" + filtro + ")", "gi");
+        return texto.replace(regex, '<span class="highlight">$1</span>');
+    }
+    </script>
 </body>
 </html>

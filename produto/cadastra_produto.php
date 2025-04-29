@@ -1,3 +1,4 @@
+<!-- view -->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -21,7 +22,7 @@
                     </div>
                     <div class="card-body">
                         <?php
-                        include_once '../../fachada.php';
+                        include_once '../fachada.php';
 
                         if (isset($_GET['msg'])):
                             echo '<div class="alert alert-danger">' . htmlspecialchars($_GET['msg']) . '</div>';
