@@ -6,12 +6,12 @@ class Fornecedor extends Usuario {
 
     // Construtor da classe
     public function __construct($nome, $email, $senha, $telefone, $cnpj, $descricao = null) {
-        parent::__construct($nome, $email, $senha, $telefone, null);
+        parent::__construct($nome, $email, $senha, $telefone);
         $this->cnpj = $cnpj;
         $this->descricao = $descricao;
     }
 
-    // Getters e Setters específicos do Fornecedor
+
     public function getCnpj() {
         return $this->cnpj;
     }

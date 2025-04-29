@@ -25,7 +25,8 @@ class PostgresUsuarioDao extends PostgresDao implements UsuarioDao {
         $endereco_id = $endereco ? $endereco->getId() : null;
         $stmt->bindValue(":endereco_id", $endereco_id);
         
-        $stmt->bindValue(":tipo", $usuario->getTipo());
+        $tipo = $usuario->getTipo() ? 'true' : 'false';
+        $stmt->bindValue(":tipo", $tipo, PDO::PARAM_BOOL);
         $stmt->bindValue(":cartao_credito", $usuario->getCartaoCredito());
 
         return $stmt->execute();

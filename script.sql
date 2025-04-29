@@ -18,7 +18,6 @@ CREATE TABLE usuario (
     endereco_id INT,
     tipo BOOLEAN NOT NULL DEFAULT FALSE,
     cartao_credito VARCHAR(19),
-    descricao TEXT,
     FOREIGN KEY (endereco_id) REFERENCES endereco(id)
 );
 

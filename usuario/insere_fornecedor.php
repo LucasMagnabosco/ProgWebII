@@ -28,11 +28,10 @@ try {
         }
     }
     
-    // Cria o fornecedor (que é um tipo de usuário)
     $senhaHash = md5($senha);
     $fornecedor = new Fornecedor($nome, $email, $senhaHash, $telefone, $cnpj, $descricao);
     
-    if ($usuarioDao->insere($fornecedor)) {
+    if ($fornecedorDao->insere($fornecedor)) {
         $usuarioCriado = $usuarioDao->buscaPorEmail($email);
         if ($usuarioCriado) {
             $_SESSION['usuario_id'] = $usuarioCriado->getId();
@@ -45,6 +44,6 @@ try {
         header("Location: novo_fornecedor.php?msg=Erro ao cadastrar fornecedor&tipo=danger");
     }
 } catch(Exception $e) {
-    header("Location: novo_fornecedor.php?msg=" . $e->getMessage() . "&tipo=danger");
+    header("Location: novo_fornecedor.php?msg=" . urlencode($e->getMessage()) . "&tipo=danger");
 }
 ?> 
