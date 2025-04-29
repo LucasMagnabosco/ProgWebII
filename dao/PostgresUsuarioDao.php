@@ -11,8 +11,8 @@ class PostgresUsuarioDao extends PostgresDao implements UsuarioDao {
     
     public function insere($usuario) {
         $query = "INSERT INTO " . $this->table_name . 
-        " (nome, email, senha, telefone, endereco_id, tipo, cartao_credito, descricao) VALUES" .
-        " (:nome, :email, :senha, :telefone, :endereco_id, :tipo, :cartao_credito, :descricao)";
+        " (nome, email, senha, telefone, endereco_id, tipo, cartao_credito) VALUES" .
+        " (:nome, :email, :senha, :telefone, :endereco_id, :tipo, :cartao_credito)";
 
         $stmt = $this->conn->prepare($query);
 
@@ -27,7 +27,6 @@ class PostgresUsuarioDao extends PostgresDao implements UsuarioDao {
         
         $stmt->bindValue(":tipo", $usuario->getTipo());
         $stmt->bindValue(":cartao_credito", $usuario->getCartaoCredito());
-        $stmt->bindValue(":descricao", $usuario->getDescricao());
 
         return $stmt->execute();
     }
@@ -47,7 +46,7 @@ class PostgresUsuarioDao extends PostgresDao implements UsuarioDao {
         $query = "UPDATE " . $this->table_name . 
         " SET nome = :nome, email = :email, senha = :senha, 
           telefone = :telefone, endereco_id = :endereco_id,
-          tipo = :tipo, cartao_credito = :cartao_credito, descricao = :descricao" .
+          tipo = :tipo, cartao_credito = :cartao_credito" .
         " WHERE id = :id";
 
         $stmt = $this->conn->prepare($query);
@@ -63,7 +62,6 @@ class PostgresUsuarioDao extends PostgresDao implements UsuarioDao {
         
         $stmt->bindValue(":tipo", $usuario->getTipo());
         $stmt->bindValue(":cartao_credito", $usuario->getCartaoCredito());
-        $stmt->bindValue(":descricao", $usuario->getDescricao());
         $stmt->bindValue(':id', $usuario->getId());
 
         return $stmt->execute();
@@ -109,6 +107,33 @@ class PostgresUsuarioDao extends PostgresDao implements UsuarioDao {
         return $usuarios;
     }
 
+    public function buscaPorTipo($tipo) {
+        $usuarios = array();
+        $query = "SELECT * FROM " . $this->table_name . " WHERE tipo = :tipo ORDER BY id ASC";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindValue(':tipo', $tipo);
+        $stmt->execute();
+
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $usuarios[] = $this->criarUsuario($row);
+        }
+
+        return $usuarios;
+    }
+
+    public function atualizarTipo($usuario, $novoTipo) {
+        $query = "UPDATE " . $this->table_name . " SET tipo = :tipo WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindValue(':tipo', $novoTipo);
+        $stmt->bindValue(':id', $usuario->getId());
+        
+        if ($stmt->execute()) {
+            $usuario->setTipo($novoTipo);
+            return true;
+        }
+        return false;
+    }
+
     private function criarUsuario($row) {
         $endereco = null;
         if($row['endereco_id']) {
@@ -123,7 +148,6 @@ class PostgresUsuarioDao extends PostgresDao implements UsuarioDao {
             $row['telefone'],
             $row['tipo'],
             $row['cartao_credito'],
-            $row['descricao'],
             $endereco
         );
         $usuario->setId($row['id']);

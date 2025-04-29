@@ -27,7 +27,7 @@ CREATE TABLE usuario (
     senha VARCHAR(255) NOT NULL,
     telefone VARCHAR(20) NOT NULL,
     endereco_id INT,
-    tipo VARCHAR(20) NOT NULL,
+    tipo BOOLEAN NOT NULL DEFAULT FALSE,
     cartao_credito VARCHAR(19),
     descricao TEXT,
     FOREIGN KEY (endereco_id) REFERENCES endereco(id)
