@@ -3,19 +3,22 @@
 class Fornecedor {
     private $id;
     private $nome;
+    private $descricao;
     private $cnpj;
     private $telefone;
     private $email;
     private $endereco_id;
 
+
     // Construtor da classe
-    public function __construct($id, $nome, $cnpj, $telefone, $email, $endereco_id) {
+    public function __construct($id, $nome, $cnpj, $telefone, $email, $endereco_id, $descricao = null) {
         $this->id = $id;
         $this->nome = $nome;
         $this->cnpj = $cnpj;
         $this->telefone = $telefone;
         $this->email = $email;
         $this->endereco_id = $endereco_id;
+        $this->descricao = $descricao;
     }
 
     // Getters e Setters
@@ -67,9 +70,17 @@ class Fornecedor {
         $this->endereco_id = $endereco_id;
     }
 
+    public function getDescricao() {
+        return $this->descricao;
+    }
+
+    public function setDescricao($descricao) {
+        $this->descricao = $descricao;
+    }
+
     // Método para retornar uma representação textual do objeto
     public function __toString() {
-        return "Fornecedor [ID: $this->id, Nome: $this->nome, CNPJ: $this->cnpj, Telefone: $this->telefone, Email: $this->email, Endereço ID: $this->endereco_id]";
+        return "Fornecedor [ID: $this->id, Nome: $this->nome, CNPJ: $this->cnpj, Telefone: $this->telefone, Email: $this->email, Endereço ID: $this->endereco_id, Descrição: $this->descricao]";
     }
 }
 ?>
