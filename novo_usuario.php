@@ -21,7 +21,8 @@
                     </div>
                     <div class="card-body">
                         <?php if (isset($_GET['msg'])): ?>
-                            <div class="alert alert-danger"><?php echo htmlspecialchars($_GET['msg']); ?></div>
+                            <div class="alert alert-<?php echo $_GET['tipo']; ?>">
+                                <?php echo htmlspecialchars($_GET['msg']); ?></div>
                         <?php endif; ?>
                         
                         <form action="insere_usuario.php" method="post">

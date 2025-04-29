@@ -9,12 +9,12 @@ $email = isset($_POST["email"]) ? trim($_POST["email"]) : FALSE;
 $senha = isset($_POST["senha"]) ? trim($_POST["senha"]) : FALSE; 
 
 if(!$email || !$senha) { 
-    header("Location: login.php?msg=Por favor, preencha todos os campos");
+    header("Location: login.php?msg=Por favor, preencha todos os campos&tipo=danger");
     exit;
 }
 
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    header("Location: login.php?msg=Email ou senha inválidos");
+    header("Location: login.php?msg=Email ou senha inválidos&tipo=danger");
     exit;
 }
 
@@ -29,7 +29,7 @@ try {
         exit; 
     } else {
         // Email ou senha incorretos
-        header("Location: login.php?msg=Email ou senha inválidos");
+        header("Location: login.php?msg=Email ou senha inválidos&tipo=danger");
         exit;
     }
 } catch(Exception $e) {

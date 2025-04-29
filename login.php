@@ -3,6 +3,7 @@ session_start();
 include_once 'fachada.php';
 
 $msg = isset($_GET['msg']) ? $_GET['msg'] : '';
+$tipo = isset($_GET['tipo']) ? $_GET['tipo'] : '';
 
 
 
@@ -35,9 +36,6 @@ $msg = isset($_GET['msg']) ? $_GET['msg'] : '';
                             </div>
                         <?php endif; ?>
 
-                        <!-- <?php if (isset($_GET['msg'])): ?>
-                            <div class="alert alert-danger"><?php echo htmlspecialchars($_GET['msg']); ?></div>
-                        <?php endif; ?> -->
                         
                         <form method="post" action="executa_login.php">
                             <div class="mb-3">
