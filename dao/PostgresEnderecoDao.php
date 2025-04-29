@@ -1,7 +1,7 @@
 <?php
 include_once('EnderecoDao.php');
 include_once('PostgresDao.php');
-include_once(dirname(__FILE__) . '/../model/Endereco.php');
+//include_once(dirname(__FILE__) . '/../model/Endereco.php');
 
 class PostgresEnderecoDao extends PostgresDao implements EnderecoDao {
     private $table_name = 'endereco';

@@ -2,7 +2,7 @@
 
 include_once('FornecedorDao.php');
 include_once('PostgresDao.php');
-include_once('../model/Fornecedor.php');
+include_once(dirname(__FILE__) . '/../model/Fornecedor.php');
 
 class PostgresFornecedorDao extends PostgresDao implements FornecedorDao {
 
