@@ -9,18 +9,6 @@ CREATE TABLE endereco (
     estado VARCHAR(2) NOT NULL
 );
 
-
-CREATE TABLE fornecedor (
-    id SERIAL PRIMARY KEY,
-    descricao VARCHAR(255),
-    nome VARCHAR(255) NOT NULL,
-    cnpj VARCHAR(20) NOT NULL UNIQUE,
-    telefone VARCHAR(20),
-    email VARCHAR(255),
-    endereco_id INT,
-    FOREIGN KEY (endereco_id) REFERENCES endereco(id)
-);
-
 CREATE TABLE usuario (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(255) NOT NULL,
@@ -34,6 +22,13 @@ CREATE TABLE usuario (
     FOREIGN KEY (endereco_id) REFERENCES endereco(id)
 );
 
+CREATE TABLE fornecedor (
+    id SERIAL PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    cnpj VARCHAR(20) NOT NULL UNIQUE,
+    descricao TEXT,
+    FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE
+);
 
 CREATE TABLE produto (
     id SERIAL PRIMARY KEY,
@@ -43,7 +38,6 @@ CREATE TABLE produto (
     fornecedor_id INT NOT NULL,
     FOREIGN KEY (fornecedor_id) REFERENCES fornecedor(id)
 );
-
 
 CREATE TABLE estoque (
     id SERIAL PRIMARY KEY,

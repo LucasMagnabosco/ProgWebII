@@ -7,7 +7,7 @@ include_once '../fachada.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro de Usuário</title>
+    <title>Cadastro de Fornecedor</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         .container {
@@ -29,7 +29,7 @@ include_once '../fachada.php';
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="text-center">Cadastro de Usuário</h3>
+                        <h3 class="text-center">Cadastro de Fornecedor</h3>
                     </div>
                     <div class="card-body">
                         <?php if (isset($_GET['msg'])): ?>
@@ -37,7 +37,7 @@ include_once '../fachada.php';
                                 <?php echo htmlspecialchars($_GET['msg']); ?></div>
                         <?php endif; ?>
                         
-                        <form action="insere_usuario.php" method="post">
+                        <form action="insere_fornecedor.php" method="post">
                             <div class="mb-3">
                                 <label for="nome" class="form-label">Nome</label>
                                 <input type="text" id="nome" name="nome" class="form-control" required />
@@ -57,16 +57,24 @@ include_once '../fachada.php';
                                 <label for="telefone" class="form-label">Telefone</label>
                                 <input type="tel" id="telefone" name="telefone" class="form-control" required />
                             </div>
+
+                            <div class="mb-3">
+                                <label for="cnpj" class="form-label">CNPJ</label>
+                                <input type="text" id="cnpj" name="cnpj" class="form-control" required />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="descricao" class="form-label">Descrição</label>
+                                <textarea id="descricao" name="descricao" class="form-control" rows="3"></textarea>
+                            </div>
                             
                             <div class="d-grid">
-                                <button type="submit" class="btn btn-primary">Cadastrar</button>
+                                <button type="submit" class="btn btn-primary">Cadastrar Fornecedor</button>
                             </div>
                         </form>
                     </div>
                     <div class="card-footer text-center">
-                        <a href="../login/login.php" class="btn btn-link">Cancelar</a>
-                        <span class="mx-2">|</span>
-                        <a href="novo_fornecedor.php" class="btn btn-link">Cadastrar como Fornecedor</a>
+                        <a href="novo_usuario.php" class="btn btn-link">Voltar para Cadastro de Usuário</a>
                     </div>
                 </div>
             </div>
@@ -74,8 +82,4 @@ include_once '../fachada.php';
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html>
-
-
-
-
+</html> 

@@ -16,7 +16,6 @@ class Usuario {
         $email,
         $senha,
         $telefone,
-        $tipo,
         ?string $cartaoCredito = null,
         ?Endereco $endereco = null
     ) {
@@ -24,7 +23,7 @@ class Usuario {
         $this->email = $email;
         $this->senha = $senha;
         $this->telefone = $telefone;
-        $this->tipo = $tipo;
+        $this->tipo = false;
         $this->cartaoCredito = $cartaoCredito;
         $this->endereco = $endereco;
     }
