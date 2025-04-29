@@ -12,7 +12,7 @@ CREATE TABLE endereco (
 
 CREATE TABLE fornecedor (
     id SERIAL PRIMARY KEY,
-    descricao VARCHAR KEY(255),
+    descricao VARCHAR(255),
     nome VARCHAR(255) NOT NULL,
     cnpj VARCHAR(20) NOT NULL UNIQUE,
     telefone VARCHAR(20),
