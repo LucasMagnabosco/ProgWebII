@@ -1,6 +1,6 @@
 <?php
 session_start();
-include_once 'fachada.php';
+include_once '../fachada.php';
 
 $msg = isset($_GET['msg']) ? $_GET['msg'] : '';
 $tipo = isset($_GET['tipo']) ? $_GET['tipo'] : '';
@@ -52,7 +52,7 @@ $tipo = isset($_GET['tipo']) ? $_GET['tipo'] : '';
                         </form>
                     </div>
                     <div class="card-footer text-center">
-                        <a href="novo_usuario.php" class="btn btn-link">Cadastrar novo usuário</a>
+                        <a href="/ProgWebII/usuario/novo_usuario.php" class="btn btn-link">Cadastrar novo usuário</a>
                     </div>
                 </div>
             </div>

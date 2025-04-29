@@ -7,9 +7,9 @@ class Usuario {
     private $senha;
     private $telefone;
     private $endereco = null;
-    private $tipo; // 'cliente' ou 'fornecedor'
+    private $tipo; // 'admin' ou 'normal'
     private $cartaoCredito = null;
-    private $descricao = null;
+ 
 
     public function __construct(
         $nome,
@@ -18,7 +18,6 @@ class Usuario {
         $telefone,
         $tipo,
         ?string $cartaoCredito = null,
-        ?string $descricao = null,
         ?Endereco $endereco = null
     ) {
         $this->nome = $nome;
@@ -27,7 +26,6 @@ class Usuario {
         $this->telefone = $telefone;
         $this->tipo = $tipo;
         $this->cartaoCredito = $cartaoCredito;
-        $this->descricao = $descricao;
         $this->endereco = $endereco;
     }
 
@@ -52,16 +50,12 @@ class Usuario {
         return $this->endereco;
     }
 
-    public function getTipo(){
+    public function getTipo() {
         return $this->tipo;
     }
 
     public function getCartaoCredito() {
         return $this->cartaoCredito;
-    }
-
-    public function getDescricao() {
-        return $this->descricao;
     }
 
     public function getSenha() { return $this->senha; }
@@ -79,15 +73,14 @@ class Usuario {
         $this->telefone = $telefone;
     }
 
-    public function setSenha($senha) {
-        $this->senha = md5($senha);
-    }
-
     public function setId($id) {
         $this->id = $id;
         return $this;
     }
 
+    public function setTipo($tipo) {
+        $this->tipo = $tipo;
+    }
     public function adicionarEndereco($endereco) {
         $this->endereco = $endereco;
         return $this;
@@ -103,15 +96,6 @@ class Usuario {
 
     public function setEndereco($endereco) {
         $this->endereco = $endereco;
-    }
-
-    // Verificação de tipo
-    public function isCliente(): bool {
-        return $this->tipo === 'cliente';
-    }
-
-    public function isFornecedor(): bool {
-        return $this->tipo === 'fornecedor';
     }
 }
 ?>

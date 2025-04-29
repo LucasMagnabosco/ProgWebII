@@ -1,10 +1,10 @@
 <?php
 session_start();
-include_once 'fachada.php';
+include_once '../fachada.php';
 
 
 if (!isset($_SESSION['usuario_id'])) {
-    header("Location: novo_usuario.php");
+    header("Location: ../usuario/novo_usuario.php");
     exit;
 }
 
@@ -34,7 +34,7 @@ try {
     if ($dao->atualizarEndereco($usuario, $endereco)) {
 
         unset($_SESSION['usuario_id']);
-        header("Location: login.php?msg=Usuário cadastrado com sucesso&tipo=success");
+        header("Location: ../login/login.php?msg=Usuário cadastrado com sucesso&tipo=success");
     } else {
         header("Location: novo_endereco.php?msg=Erro ao cadastrar endereço&tipo=danger");
     }

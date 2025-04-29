@@ -1,6 +1,6 @@
 <?php
 session_start();
-include_once 'fachada.php';
+include_once '../fachada.php';
 
 $nome = $_POST['nome'];
 $email = $_POST['email'];
@@ -25,7 +25,7 @@ try {
         if ($usuarioCriado) {
             $_SESSION['usuario_id'] = $usuarioCriado->getId();
             $_SESSION['usuario_nome'] = $usuarioCriado->getNome();
-            header("Location: novo_endereco.php");
+            header("Location: ../endereco/novo_endereco.php");
         } else {
             header("Location: novo_usuario.php?msg=Erro ao cadastrar usuário&tipo=danger");
         }

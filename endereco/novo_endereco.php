@@ -1,14 +1,14 @@
 <?php
 session_start();
-
+include_once '../fachada.php';
 
 if (!isset($_SESSION['usuario_id'])) {
-    header("Location: novo_usuario.php");
+    header("Location: ../usuario/novo_usuario.php");
     exit;
 }
 
 $page_title = "Cadastro de Endereço";
-include_once "layout_header.php";
+include_once "../layout_header.php";
 ?>
 
 <div class="container">
@@ -94,7 +94,7 @@ include_once "layout_header.php";
                     </form>
                 </div>
                 <div class="card-footer text-center">
-                    <a href="login.php" class="btn btn-link">Cancelar</a>
+                    <a href="../login/login.php" class="btn btn-link">Cancelar</a>
                 </div>
             </div>
         </div>
@@ -102,5 +102,5 @@ include_once "layout_header.php";
 </div>
 
 <?php
-include_once "layout_footer.php";
+include_once "../layout_footer.php";
 ?> 

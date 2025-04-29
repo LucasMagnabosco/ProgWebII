@@ -1,3 +1,7 @@
+<?php
+session_start();
+include_once '../fachada.php';
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -60,7 +64,7 @@
                         </form>
                     </div>
                     <div class="card-footer text-center">
-                        <a href="login.php" class="btn btn-link">Cancelar</a>
+                        <a href="../login/login.php" class="btn btn-link">Cancelar</a>
                     </div>
                 </div>
             </div>

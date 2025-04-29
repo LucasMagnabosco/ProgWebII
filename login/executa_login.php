@@ -1,7 +1,6 @@
 <?php 
 
-require "fachada.php"; 
- 
+require "../fachada.php"; 
 
 session_start();
 
@@ -9,12 +8,12 @@ $email = isset($_POST["email"]) ? trim($_POST["email"]) : FALSE;
 $senha = isset($_POST["senha"]) ? trim($_POST["senha"]) : FALSE; 
 
 if(!$email || !$senha) { 
-    header("Location: login.php?msg=Por favor, preencha todos os campos&tipo=danger");
+    header("Location: login.php?msg=Por favor, preencha todos os campos");
     exit;
 }
 
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    header("Location: login.php?msg=Email ou senha inválidos&tipo=danger");
+    header("Location: login.php?msg=Email ou senha inválidos");
     exit;
 }
 
@@ -25,11 +24,11 @@ try {
     if($usuario && md5($senha) === $usuario->getSenha()) { 
         // Login bem sucedido
         $_SESSION["usuario_id"] = $usuario->getId();
-        header("Location: usuarios.php"); 
+        header("Location: ../usuarios.php"); 
         exit; 
     } else {
         // Email ou senha incorretos
-        header("Location: login.php?msg=Email ou senha inválidos&tipo=danger");
+        header("Location: login.php?msg=Email ou senha inválidos");
         exit;
     }
 } catch(Exception $e) {
