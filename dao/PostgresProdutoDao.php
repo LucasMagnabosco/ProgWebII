@@ -10,17 +10,33 @@ class PostgresProdutoDao implements ProdutoDao {
     }
 
     public function insere(Produto $produto): bool {
-        $sql = "INSERT INTO produto (nome, descricao, fornecedor_id, foto) 
-                VALUES (:nome, :descricao, :fornecedor_id, :foto)";
-        
-        $stmt = $this->conn->prepare($sql);
-        
-        return $stmt->execute([
-            ':nome' => $produto->getNome(),
-            ':descricao' => $produto->getDescricao(),
-            ':foto' => $produto->getFoto(),
-            ':fornecedor_id' => $produto->getFornecedorId()
-        ]);
+        try {
+            $sql = "INSERT INTO produto (nome, descricao, fornecedor_id, foto) 
+                    VALUES (:nome, :descricao, :fornecedor_id, :foto)";
+            
+            $stmt = $this->conn->prepare($sql);
+            
+            $params = [
+                ':nome' => $produto->getNome(),
+                ':descricao' => $produto->getDescricao(),
+                ':foto' => $produto->getFoto(),
+                ':fornecedor_id' => $produto->getFornecedorId()
+            ];
+
+            error_log("Tentando inserir produto com parâmetros: " . print_r($params, true));
+            
+            $result = $stmt->execute($params);
+            
+            if (!$result) {
+                error_log("Erro ao inserir produto: " . print_r($stmt->errorInfo(), true));
+                return false;
+            }
+
+            return true;
+        } catch (PDOException $e) {
+            error_log("Exceção ao inserir produto: " . $e->getMessage());
+            return false;
+        }
     }
     
 
@@ -39,9 +55,10 @@ class PostgresProdutoDao implements ProdutoDao {
     public function buscaTodos(): array {
         $sql = "SELECT 
                     p.id, p.nome, p.descricao, p.foto, 
-                    f.nome AS fornecedor_nome 
+                    u.nome AS fornecedor_nome 
                 FROM produto p
-                JOIN fornecedor f ON p.fornecedor_id = f.id";
+                JOIN fornecedor f ON p.fornecedor_id = f.id
+                JOIN usuario u ON f.usuario_id = u.id";
         $stmt = $this->conn->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -88,4 +105,16 @@ class PostgresProdutoDao implements ProdutoDao {
         ]);
     }
     
+    public function buscaPorFornecedor(int $fornecedorId): array {
+        $sql = "SELECT 
+                    p.id, p.nome, p.descricao, p.foto, 
+                    u.nome AS fornecedor_nome 
+                FROM produto p
+                JOIN fornecedor f ON p.fornecedor_id = f.id
+                JOIN usuario u ON f.usuario_id = u.id
+                WHERE p.fornecedor_id = :fornecedor_id";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([':fornecedor_id' => $fornecedorId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

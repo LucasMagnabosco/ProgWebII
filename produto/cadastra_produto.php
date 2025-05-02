@@ -13,6 +13,34 @@
     </style>
 </head>
 <body class="bg-light">
+    <?php
+    include_once '../fachada.php';
+    include_once '../comum.php';
+
+    // Inicia a sessão se ainda não estiver iniciada
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    // Verifica se o usuário está logado e é fornecedor
+    if (!isset($_SESSION["usuario_id"]) || !isset($_SESSION["is_fornecedor"]) || !$_SESSION["is_fornecedor"]) {
+        header("Location: /ProgWebII/login/login.php");
+        exit();
+    }
+
+    // Busca o fornecedor logado
+    $fornecedorDao = $factory->getFornecedorDao();
+    $fornecedor = $fornecedorDao->buscaPorUsuarioId($_SESSION["usuario_id"]);
+
+    if (!$fornecedor) {
+        header("Location: produtos.php?msg=Fornecedor não encontrado&tipo=danger");
+        exit();
+    }
+
+    $page_title = "Cadastro de Produto";
+    include_once '../layout_header.php';
+    ?>
+
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-6">
@@ -21,17 +49,11 @@
                         <h3 class="text-center">Cadastro de Produto</h3>
                     </div>
                     <div class="card-body">
-                        <?php
-                        include_once '../fachada.php';
-
-                        if (isset($_GET['msg'])):
-                            echo '<div class="alert alert-danger">' . htmlspecialchars($_GET['msg']) . '</div>';
-                        endif;
-
-                        // Busca os fornecedores cadastrados para o combobox
-                        $fornecedorDao = $factory->getFornecedorDao();
-                        $fornecedores = $fornecedorDao->buscaTodos();
-                        ?>
+                        <?php if (isset($_GET['msg'])): ?>
+                            <div class="alert alert-<?php echo $_GET['tipo'] ?? 'danger'; ?>">
+                                <?php echo htmlspecialchars($_GET['msg']); ?>
+                            </div>
+                        <?php endif; ?>
 
                         <form action="insere_produto.php" method="post" enctype="multipart/form-data">
                             <div class="mb-3">
@@ -44,17 +66,7 @@
                                 <textarea id="descricao" name="descricao" class="form-control" rows="3" required></textarea>
                             </div>
 
-                            <div class="mb-3">
-                                <label for="fornecedor_id" class="form-label">Fornecedor</label>
-                                <select id="fornecedor_id" name="fornecedor_id" class="form-select" required>
-                                    <option value="">Selecione um fornecedor</option>
-                                    <?php foreach ($fornecedores as $fornecedor): ?>
-                                        <option value="<?= $fornecedor->getId() ?>">
-                                            <?= htmlspecialchars($fornecedor->getNome()) ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
+                            <input type="hidden" name="fornecedor_id" value="<?= $fornecedor->getFornecedorId() ?>" />
 
                             <div class="mb-3">
                                 <label for="foto" class="form-label">Foto do Produto (opcional)</label>

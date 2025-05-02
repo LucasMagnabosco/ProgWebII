@@ -147,11 +147,11 @@ class PostgresUsuarioDao extends PostgresDao implements UsuarioDao {
             $row['email'],
             $row['senha'],
             $row['telefone'],
-            $row['tipo'],
             $row['cartao_credito'],
             $endereco
         );
         $usuario->setId($row['id']);
+        $usuario->setTipo($row['tipo']);
         return $usuario;
     }
 

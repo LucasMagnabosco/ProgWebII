@@ -5,6 +5,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title><?php echo $page_title; ?></title>
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 	<style>
 		body {
 			padding-top: 100px;
@@ -29,7 +30,7 @@
 	<nav class="navbar navbar-expand-lg navbar-light fixed-top">
 		<div class="container-fluid">
 			<a class="navbar-brand" href="index.php"><?php echo $page_title; ?></a>
-			<div class="ms-auto">
+			<div class="ms-auto d-flex align-items-center">
 				<?php
 				include_once "comum.php";
 				
@@ -39,9 +40,14 @@
 				
 				if(isset($_SESSION["usuario_id"])) {
 					echo '<span class="me-3">Olá, ' . htmlspecialchars($_SESSION["usuario_nome"]) . '</span>';
-					echo '<a href="executa_logout.php" class="btn btn-outline-danger">Logout</a>';
+					if(isset($_SESSION["is_fornecedor"]) && $_SESSION["is_fornecedor"]) {
+						echo '<a href="/ProgWebII/produto/produtos.php" class="btn btn-warning me-2">
+							<i class="fas fa-boxes"></i> Gerenciar Estoque
+						</a>';
+					}
+					echo '<a href="/ProgWebII/login/executa_logout.php" class="btn btn-outline-danger">Logout</a>';
 				} else {
-					echo '<a href="login.php" class="btn btn-outline-primary">Login</a>';
+					echo '<a href="/ProgWebII/login/login.php" class="btn btn-outline-primary">Login</a>';
 				}
 				?>
 			</div>

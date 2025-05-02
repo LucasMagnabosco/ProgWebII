@@ -1,10 +1,38 @@
-<!-- view -->
 <?php
 include_once '../fachada.php';
+include_once '../comum.php';
 
-// Busca todos os produtos cadastrados
+// Inicia a sessão se ainda não estiver iniciada
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Verifica se o usuário está logado e é fornecedor
+if (!isset($_SESSION["usuario_id"]) || !isset($_SESSION["is_fornecedor"]) || !$_SESSION["is_fornecedor"]) {
+    header("Location: /ProgWebII/login/login.php");
+    exit();
+}
+
+// Busca o fornecedor logado
+$fornecedorDao = $factory->getFornecedorDao();
+$fornecedor = $fornecedorDao->buscaPorUsuarioId($_SESSION["usuario_id"]);
+
+if (!$fornecedor) {
+    header("Location: /ProgWebII/login/login.php?msg=Fornecedor não encontrado&tipo=danger");
+    exit();
+}
+
+error_log("Fornecedor encontrado - ID do usuário: " . $fornecedor->getId() . 
+          ", ID do fornecedor: " . $fornecedor->getFornecedorId());
+
+$page_title = "Meus Produtos";
+include_once '../layout_header.php';
+
+
 $produtoDao = $factory->getProdutoDao();
-$produtos = $produtoDao->buscaTodos();
+$produtos = $produtoDao->buscaPorFornecedor($fornecedor->getFornecedorId());
+
+error_log("Produtos encontrados: " . print_r($produtos, true));
 ?>
 
 <!DOCTYPE html>
@@ -12,10 +40,9 @@ $produtos = $produtoDao->buscaTodos();
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lista de Produtos</title>
+    <title>Meus Produtos</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <style>
-    /* Estilo para destacar texto */
     .highlight {
         background-color: yellow;
         font-weight: bold;
@@ -25,7 +52,7 @@ $produtos = $produtoDao->buscaTodos();
 <body class="bg-light">
     <div class="container mt-5">
         <div class="position-relative mb-4">
-            <h3 class="text-center">Lista de Produtos</h3>
+            <h3 class="text-center">Meus Produtos</h3>
             <a href="cadastra_produto.php" class="btn btn-success position-absolute end-0 top-0">Cadastrar Novo Produto</a>
         </div>
 
@@ -39,7 +66,6 @@ $produtos = $produtoDao->buscaTodos();
                 <tr>
                     <th>Nome</th>
                     <th>Descrição</th>
-                    <th>Fornecedor</th>
                     <th>Ações</th>
                 </tr>
             </thead>
@@ -48,7 +74,6 @@ $produtos = $produtoDao->buscaTodos();
                     <tr>
                         <td><?= htmlspecialchars($produto['nome']) ?></td>
                         <td><?= htmlspecialchars($produto['descricao']) ?></td>
-                        <td><?= htmlspecialchars($produto['fornecedor_nome']) ?></td>
                         <td>
                             <a href="editar_produto.php?id=<?= $produto['id'] ?>" class="btn btn-warning btn-sm">Editar</a>
                             <a href="excluir_produto.php?id=<?= $produto['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir este produto?')">Excluir</a>
@@ -61,7 +86,7 @@ $produtos = $produtoDao->buscaTodos();
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Script de filtro e destaque -->
+    <!-- Filtro e destaque -->
     <script>
     function filtrarTabela() {
         var input = document.getElementById("pesquisa");

@@ -7,7 +7,7 @@ class Usuario {
     private $senha;
     private $telefone;
     private $endereco = null;
-    private $tipo; // 'admin' ou 'normal'
+    private $tipo; // 'fornecedor' ou 'normal'
     private $cartaoCredito = null;
  
 

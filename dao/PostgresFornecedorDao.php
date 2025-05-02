@@ -55,17 +55,20 @@ class PostgresFornecedorDao extends PostgresDao implements FornecedorDao {
     }
 
     public function buscaPorUsuarioId($usuarioId) {
-        $sql = "SELECT f.*, u.* FROM fornecedor f 
+        $sql = "SELECT f.id as fornecedor_id, f.*, u.* 
+                FROM fornecedor f 
                 JOIN usuario u ON f.usuario_id = u.id 
-                WHERE f.usuario_id = :usuario_id";
+                WHERE u.id = :usuario_id";
         $stmt = $this->conn->prepare($sql);
         $stmt->bindParam(":usuario_id", $usuarioId);
         $stmt->execute();
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if ($row) {
+            error_log("Fornecedor encontrado: " . print_r($row, true));
             return $this->criarFornecedor($row);
         }
+        error_log("Nenhum fornecedor encontrado para o usuário ID: " . $usuarioId);
         return null;
     }
 
@@ -75,6 +78,8 @@ class PostgresFornecedorDao extends PostgresDao implements FornecedorDao {
 
             // Primeiro insere o usuário
             $usuarioDao = new PostgresUsuarioDao($this->conn);
+            // Define o tipo como true para fornecedor
+            $fornecedor->setTipo(true);
             if (!$usuarioDao->insere($fornecedor)) {
                 throw new Exception("Erro ao inserir usuário");
             }
@@ -158,6 +163,8 @@ class PostgresFornecedorDao extends PostgresDao implements FornecedorDao {
     }
 
     private function criarFornecedor($row) {
+        error_log("Criando fornecedor com dados: " . print_r($row, true));
+        
         $fornecedor = new Fornecedor(
             $row['nome'],
             $row['email'],
@@ -166,7 +173,16 @@ class PostgresFornecedorDao extends PostgresDao implements FornecedorDao {
             $row['cnpj'],
             $row['descricao']
         );
+        
+        // ID do usuário
         $fornecedor->setId($row['id']);
+        
+        // ID do fornecedor (usando o alias fornecedor_id)
+        $fornecedor->setFornecedorId($row['fornecedor_id']);
+        
+        error_log("Fornecedor criado - ID do usuário: " . $fornecedor->getId() . 
+                 ", ID do fornecedor: " . $fornecedor->getFornecedorId());
+        
         return $fornecedor;
     }
 }

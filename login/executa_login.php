@@ -24,7 +24,10 @@ try {
     if($usuario && md5($senha) === $usuario->getSenha()) { 
         // Login bem sucedido
         $_SESSION["usuario_id"] = $usuario->getId();
-        header("Location: ../usuarios.php"); 
+        $_SESSION["usuario_nome"] = $usuario->getNome();
+        $_SESSION["is_fornecedor"] = $usuario->getTipo();
+        
+        header("Location: ../visualiza_produtos.php"); 
         exit; 
     } else {
         // Email ou senha incorretos
