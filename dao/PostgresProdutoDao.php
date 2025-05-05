@@ -92,13 +92,7 @@ class PostgresProdutoDao implements ProdutoDao {
                 preco = :preco, quantidade = :quantidade
                 WHERE id = :id";
         $stmt = $this->conn->prepare($sql);
-        // var_dump($stmt->execute([
-        //     ':nome' => $produto->getNome(),
-        //     ':descricao' => $produto->getDescricao(),
-        //     ':foto' => $produto->getFoto(),
-        //     ':fornecedor_id' => $produto->getFornecedorId(),
-        //     ':id' => $produto->getId()
-        // ]));
+       
         return $stmt->execute([
             ':nome' => $produto->getNome(),
             ':descricao' => $produto->getDescricao(),

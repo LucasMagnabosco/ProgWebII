@@ -35,7 +35,7 @@ CREATE TABLE produto (
     descricao TEXT,
     foto VARCHAR(255),
     quantidade INT NOT NULL DEFAULT 0,
-    preco INT NOT NULL DEFAULT 0,
+    preco DECIMAL(10,2) NOT NULL DEFAULT 0.00 CHECK (preco >= 0),
     fornecedor_id INT NOT NULL,
     FOREIGN KEY (fornecedor_id) REFERENCES fornecedor(id)
 );
