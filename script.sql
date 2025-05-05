@@ -37,6 +37,7 @@ CREATE TABLE produto (
     quantidade INT NOT NULL DEFAULT 0,
     preco DECIMAL(10,2) NOT NULL DEFAULT 0.00 CHECK (preco >= 0),
     fornecedor_id INT NOT NULL,
+    codigo VARCHAR(50),
     FOREIGN KEY (fornecedor_id) REFERENCES fornecedor(id)
 );
 
@@ -47,3 +48,68 @@ CREATE TABLE estoque (
     preco DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     FOREIGN KEY (produto_id) REFERENCES produto(id)
 );
+
+-- Cria índice para otimizar buscas por código e fornecedor
+CREATE INDEX idx_produto_codigo_fornecedor ON produto(codigo, fornecedor_id);
+
+-- Inserção de dados de exemplo
+-- Usuários fornecedores
+--
+--Todas senhas são 123
+--Todas senhas são 123
+--Todas senhas são 123
+--
+INSERT INTO usuario (nome, email, senha, telefone, tipo) VALUES
+('Eletrônicos', 'eletro@fornecedor.com', '202cb962ac59075b964b07152d234b70', '(11) 99999-1111', true),
+('Roupas', 'roupas@fornecedor.com', '202cb962ac59075b964b07152d234b70', '(11) 99999-2222', true),
+('Alimentos', 'alimentos@fornecedor.com', '202cb962ac59075b964b07152d234b70', '(11) 99999-3333', true),
+('Movéis', 'moveis@fornecedor.com', '202cb962ac59075b964b07152d234b70', '(11) 99999-4444', true),
+('Livros', 'livros@fornecedor.com', '202cb962ac59075b964b07152d234b70', '(11) 99999-5555', true);
+
+-- Fornecedores
+INSERT INTO fornecedor (usuario_id, cnpj, descricao) VALUES
+(1, '12.345.678/0001-01', 'Fornecedor de Eletrônicos'),
+(2, '23.456.789/0001-02', 'Fornecedor de Roupas'),
+(3, '34.567.890/0001-03', 'Fornecedor de Alimentos'),
+(4, '45.678.901/0001-04', 'Fornecedor de Móveis'),
+(5, '56.789.012/0001-05', 'Fornecedor de Livros');
+
+-- Produtos do Fornecedor 1 (Eletrônicos)
+INSERT INTO produto (nome, descricao, fornecedor_id, preco, quantidade, codigo) VALUES
+('Smartphone XYZ', 'Smartphone último modelo com 128GB', 1, 1999.99, 50, 'ELET001'),
+('Notebook ABC', 'Notebook i5 8GB RAM 256GB SSD', 1, 3499.99, 30, 'ELET002'),
+('Tablet 10"', 'Tablet com tela de 10 polegadas', 1, 899.99, 40, 'ELET003'),
+('Smart TV 50"', 'Smart TV 4K 50 polegadas', 1, 2499.99, 20, 'ELET004'),
+('Fone Bluetooth', 'Fone de ouvido sem fio', 1, 199.99, 100, 'ELET005');
+
+-- Produtos do Fornecedor 2 (Roupas)
+INSERT INTO produto (nome, descricao, fornecedor_id, preco, quantidade, codigo) VALUES
+('Camiseta Básica', 'Camiseta 100% algodão', 2, 49.99, 200, 'ROUP001'),
+('Calça Jeans', 'Calça jeans slim fit', 2, 129.99, 150, 'ROUP002'),
+('Vestido Floral', 'Vestido estampado floral', 2, 159.99, 100, 'ROUP003'),
+('Jaqueta Couro', 'Jaqueta de couro sintético', 2, 299.99, 50, 'ROUP004'),
+('Tênis Casual', 'Tênis casual confortável', 2, 199.99, 80, 'ROUP005');
+
+-- Produtos do Fornecedor 3 (Alimentos)
+INSERT INTO produto (nome, descricao, fornecedor_id, preco, quantidade, codigo) VALUES
+('Arroz Integral', 'Arroz integral tipo 1', 3, 8.99, 500, 'ALIM001'),
+('Feijão Carioca', 'Feijão carioca tipo 1', 3, 7.99, 500, 'ALIM002'),
+('Azeite Extra Virgem', 'Azeite de oliva extra virgem', 3, 29.99, 200, 'ALIM003'),
+('Café Premium', 'Café em grãos premium', 3, 19.99, 300, 'ALIM004'),
+('Farinha de Trigo', 'Farinha de trigo especial', 3, 5.99, 400, 'ALIM005');
+
+-- Produtos do Fornecedor 4 (Móveis)
+INSERT INTO produto (nome, descricao, fornecedor_id, preco, quantidade, codigo) VALUES
+('Sofá 3 Lugares', 'Sofá retrátil 3 lugares', 4, 1999.99, 20, 'MOVE001'),
+('Mesa de Jantar', 'Mesa de jantar 6 lugares', 4, 1499.99, 15, 'MOVE002'),
+('Cama Box', 'Cama box casal com baú', 4, 1299.99, 25, 'MOVE003'),
+('Guarda-Roupa', 'Guarda-roupa 6 portas', 4, 2499.99, 10, 'MOVE004'),
+('Rack TV', 'Rack para TV até 55"', 4, 599.99, 30, 'MOVE005');
+
+-- Produtos do Fornecedor 5 (Livros)
+INSERT INTO produto (nome, descricao, fornecedor_id, preco, quantidade, codigo) VALUES
+('Dom Casmurro', 'Romance de Machado de Assis', 5, 29.99, 100, 'LIVR001'),
+('O Pequeno Príncipe', 'Clássico da literatura', 5, 24.99, 150, 'LIVR002'),
+('1984', 'Romance distópico de George Orwell', 5, 34.99, 80, 'LIVR003'),
+('A Arte da Guerra', 'Tratado militar de Sun Tzu', 5, 19.99, 120, 'LIVR004'),
+('O Hobbit', 'Fantasia de J.R.R. Tolkien', 5, 39.99, 90, 'LIVR005');
