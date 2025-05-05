@@ -31,9 +31,10 @@ try {
     $fornecedor_id = $_POST['fornecedor_id'];
     $preco = floatval($_POST['preco']);
     $quantidade = intval($_POST['quantidade']);
+    $codigo = $_POST['codigo'] ?? null;
     $foto = $_FILES['foto'] ?? null;
 
-    error_log("Dados recebidos - Nome: $nome, Descrição: $descricao, Fornecedor ID: $fornecedor_id");
+    error_log("Dados recebidos - Nome: $nome, Descrição: $descricao, Fornecedor ID: $fornecedor_id, Código: $codigo");
 
     // Verificação e tratamento da imagem
     $fotoPath = null;
@@ -58,12 +59,14 @@ try {
         fornecedor_id: $fornecedor_id,
         preco: $preco,
         quantidade: $quantidade,
-        foto: $fotoPath
+        foto: $fotoPath,
+        codigo: $codigo
     );
 
     error_log("Objeto Produto criado - Nome: " . $produto->getNome() . 
               ", Descrição: " . $produto->getDescricao() . 
               ", Fornecedor ID: " . $produto->getFornecedorId() . 
+              ", Código: " . $produto->getCodigo() . 
               ", Foto: " . $produto->getFoto());
 
     // Inserção no banco de dados

@@ -27,6 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $produto->setFornecedorId($_POST['fornecedor_id']);
     $produto->setPreco($_POST['preco']);
     $produto->setQuantidade($_POST['quantidade']);
+    $produto->setCodigo($_POST['codigo']);
 
     // Atualizar imagem, se fornecida
     if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
@@ -55,67 +56,104 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Editar Produto</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <style>
+        .container {
+            margin-top: 100px;
+        }
+        .input-text {
+            -moz-appearance: textfield !important;
+            -webkit-appearance: textfield !important;
+            appearance: textfield !important;
+        }
+    </style>
 </head>
 <body class="bg-light">
-    <div class="container mt-5">
-        <div class="card">
-            <div class="card-header text-center">
-                <h4>Editar Produto</h4>
-            </div>
-            <div class="card-body">
-                <form action="" method="post" enctype="multipart/form-data">
-                    <div class="mb-3">
-                        <label for="nome" class="form-label">Nome</label>
-                        <input type="text" name="nome" id="nome" class="form-control" value="<?= htmlspecialchars($produto->getNome()) ?>" required>
+    <?php
+    include_once '../fachada.php';
+    include_once '../comum.php';
+
+    // Inicia a sessão se ainda não estiver iniciada
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    // Verifica se o usuário está logado e é fornecedor
+    if (!isset($_SESSION["usuario_id"]) || !isset($_SESSION["is_fornecedor"]) || !$_SESSION["is_fornecedor"]) {
+        header("Location: /ProgWebII/login/login.php");
+        exit();
+    }
+
+    $page_title = "Editar Produto";
+    include_once '../layout_header.php';
+    ?>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="text-center">Editar Produto</h3>
                     </div>
-
-                    <div class="mb-3">
-                        <label for="descricao" class="form-label">Descrição</label>
-                        <textarea name="descricao" id="descricao" class="form-control" rows="3" required><?= htmlspecialchars($produto->getDescricao()) ?></textarea>
-                    </div>
-
-                    <!-- <div class="mb-3">
-                        <label for="fornecedor_id" class="form-label">Fornecedor</label>
-                        <select name="fornecedor_id" id="fornecedor_id" class="form-select" required>
-                            <?php foreach ($fornecedores as $f): ?>
-                                <option value="<?= $f->getId() ?>" <?= $f->getId() == $produto->getFornecedorId() ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($f->getNome()) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div> -->
-
-                    <div class="mb-3">
-                        <label for="preco" class="form-label">Preço</label>
-                        <input type="number" id="preco" name="preco" class="form-control" min="0" step="0.01" value="<?= $produto->getPreco() ?>" required />
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="quantidade" class="form-label">Quantidade em Estoque</label>
-                        <input type="number" id="quantidade" name="quantidade" class="form-control" min="0" value="<?= htmlspecialchars($produto->getQuantidade()) ?>" required />
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="foto" class="form-label">Foto (opcional)</label>
-                        <input type="file" name="foto" id="foto" class="form-control" accept="image/*">
-                        <?php if ($produto->getFoto()): ?>
-                            <div class="mt-2">
-                                <img src="<?= $produto->getFoto() ?>" alt="Foto atual" style="max-width: 150px;">
+                    <div class="card-body">
+                        <?php if (isset($_GET['msg'])): ?>
+                            <div class="alert alert-<?php echo $_GET['tipo'] ?? 'danger'; ?>">
+                                <?php echo htmlspecialchars($_GET['msg']); ?>
                             </div>
                         <?php endif; ?>
-                    </div>
 
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                        <form action="" method="post" enctype="multipart/form-data">
+                            <input type="hidden" name="fornecedor_id" value="<?= $produto->getFornecedorId() ?>" />
+                            
+                            <div class="mb-3">
+                                <label for="codigo" class="form-label">Código do Produto</label>
+                                <input type="text" id="codigo" name="codigo" class="form-control" value="<?= htmlspecialchars($produto->getCodigo() ?? '') ?>" placeholder="Código de identificação do produto" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="nome" class="form-label">Nome do Produto</label>
+                                <input type="text" name="nome" id="nome" class="form-control" value="<?= htmlspecialchars($produto->getNome()) ?>" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="descricao" class="form-label">Descrição</label>
+                                <textarea name="descricao" id="descricao" class="form-control" rows="3" required><?= htmlspecialchars($produto->getDescricao()) ?></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="preco" class="form-label">Preço</label>
+                                <input type="number" id="preco" name="preco" class="form-control input-text" min="0" step="0.01" value="<?= $produto->getPreco() ?>" required />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="quantidade" class="form-label">Quantidade em Estoque</label>
+                                <input type="number" id="quantidade" name="quantidade" class="form-control" min="0" value="<?= htmlspecialchars($produto->getQuantidade()) ?>" required />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="foto" class="form-label">Foto do Produto (opcional)</label>
+                                <input type="file" name="foto" id="foto" class="form-control" accept="image/*">
+                                <?php if ($produto->getFoto()): ?>
+                                    <div class="mt-2">
+                                        <img src="<?= $produto->getFoto() ?>" alt="Foto atual" style="max-width: 150px;">
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-success">Salvar Alterações</button>
+                            </div>
+                        </form>
                     </div>
-                </form>
-            </div>
-            <div class="card-footer text-center">
-                <a href="produtos.php" class="btn btn-secondary">Voltar</a>
+                    <div class="card-footer text-center">
+                        <a href="produtos.php" class="btn btn-link">Cancelar</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -11,8 +11,8 @@ class PostgresProdutoDao implements ProdutoDao {
 
     public function insere(Produto $produto): bool {
         try {
-            $sql = "INSERT INTO produto (nome, descricao, fornecedor_id, quantidade, preco, foto) 
-                    VALUES (:nome, :descricao, :fornecedor_id, :quantidade, :preco, :foto)";
+            $sql = "INSERT INTO produto (nome, descricao, fornecedor_id, quantidade, preco, foto, codigo) 
+                    VALUES (:nome, :descricao, :fornecedor_id, :quantidade, :preco, :foto, :codigo)";
             
             $stmt = $this->conn->prepare($sql);
             
@@ -22,7 +22,8 @@ class PostgresProdutoDao implements ProdutoDao {
                 ':foto' => $produto->getFoto(),
                 ':fornecedor_id' => $produto->getFornecedorId(),
                 ':quantidade' => $produto->getQuantidade(),
-                ':preco' => $produto->getPreco()
+                ':preco' => $produto->getPreco(),
+                ':codigo' => $produto->getCodigo()
             ];
 
             error_log("Tentando inserir produto com parâmetros: " . print_r($params, true));
@@ -42,21 +43,9 @@ class PostgresProdutoDao implements ProdutoDao {
     }
     
 
-    // public function buscaTodos(): array {
-    //     $sql = "SELECT * FROM produto";
-    //     $stmt = $this->conn->query($sql);
-    //     $produtos = [];
-
-    //     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-    //         $produtos[] = new Produto($row['nome'], $row['descricao'], $row['foto']);
-    //     }
-
-    //     return $produtos;
-    // }
-
     public function buscaTodos(): array {
         $sql = "SELECT 
-                    p.id, p.nome, p.descricao, p.foto, 
+                    p.id, p.nome, p.descricao, p.foto, p.codigo,
                     u.nome AS fornecedor_nome 
                 FROM produto p
                 JOIN fornecedor f ON p.fornecedor_id = f.id
@@ -73,7 +62,41 @@ class PostgresProdutoDao implements ProdutoDao {
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($row) {
-            return new Produto($row['nome'], $row['descricao'], $row['fornecedor_id'], $row['preco'], $row['quantidade'], $row['foto']);
+            return new Produto(
+                $row['nome'], 
+                $row['descricao'], 
+                $row['fornecedor_id'], 
+                $row['preco'], 
+                $row['quantidade'], 
+                $row['foto'],
+                $row['id'],
+                $row['codigo']
+            );
+        }
+
+        return null;
+    }
+
+    public function buscaPorCodigo(string $codigo, int $fornecedorId): ?Produto {
+        $sql = "SELECT * FROM produto WHERE codigo = :codigo AND fornecedor_id = :fornecedor_id";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([
+            ':codigo' => $codigo,
+            ':fornecedor_id' => $fornecedorId
+        ]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($row) {
+            return new Produto(
+                $row['nome'], 
+                $row['descricao'], 
+                $row['fornecedor_id'], 
+                $row['preco'], 
+                $row['quantidade'], 
+                $row['foto'],
+                $row['id'],
+                $row['codigo']
+            );
         }
 
         return null;
@@ -85,11 +108,10 @@ class PostgresProdutoDao implements ProdutoDao {
         return $stmt->execute([':id' => $id]);
     }
 
-    // Método para atualizar um produto
     public function atualiza(Produto $produto): bool {
         var_dump($produto);
         $sql = "UPDATE produto SET nome = :nome, descricao = :descricao, foto = :foto,
-                preco = :preco, quantidade = :quantidade
+                preco = :preco, quantidade = :quantidade, codigo = :codigo
                 WHERE id = :id";
         $stmt = $this->conn->prepare($sql);
        
@@ -99,13 +121,14 @@ class PostgresProdutoDao implements ProdutoDao {
             ':foto' => $produto->getFoto(),
             ':id' => $produto->getId(),
             ':preco' => $produto->getPreco(),
-            ':quantidade' => $produto->getQuantidade()
+            ':quantidade' => $produto->getQuantidade(),
+            ':codigo' => $produto->getCodigo()
         ]);
     }
     
     public function buscaPorFornecedor(int $fornecedorId): array {
         $sql = "SELECT 
-                    p.id, p.nome, p.descricao, p.foto, 
+                    p.id, p.nome, p.descricao, p.foto, p.codigo,
                     u.nome AS fornecedor_nome 
                 FROM produto p
                 JOIN fornecedor f ON p.fornecedor_id = f.id

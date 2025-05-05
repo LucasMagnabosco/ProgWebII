@@ -62,6 +62,11 @@
 
                         <form action="insere_produto.php" method="post" enctype="multipart/form-data">
                             <div class="mb-3">
+                                <label for="codigo" class="form-label">Código do Produto</label>
+                                <input type="text" id="codigo" name="codigo" class="form-control" placeholder="Código de identificação do produto" />
+                            </div>
+
+                            <div class="mb-3">
                                 <label for="nome" class="form-label">Nome do Produto</label>
                                 <input type="text" id="nome" name="nome" class="form-control" required />
                             </div>

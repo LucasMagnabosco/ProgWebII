@@ -76,8 +76,9 @@ include_once 'layout_header.php';
                             <div class="card-body d-flex flex-column">
                                 <h5 class="card-title"><?= htmlspecialchars($produto['nome']) ?></h5>
                                 <p class="card-text"><?= htmlspecialchars($produto['descricao']) ?></p>
-                                <p class="card-text mt-auto">
+                                <p class="card-text">
                                     <small class="text-muted">
+                                        Código: <?= htmlspecialchars($produto['codigo'] ?? 'Não informado') ?><br>
                                         Fornecedor: <?= htmlspecialchars($produto['fornecedor_nome']) ?>
                                     </small>
                                 </p>
@@ -109,10 +110,6 @@ include_once 'layout_header.php';
         border-radius: 10px;
         margin-bottom: 20px;
     }
-    .highlight {
-        background-color: yellow;
-        font-weight: bold;
-    }
     .card-body {
         display: flex;
         flex-direction: column;
@@ -124,40 +121,30 @@ include_once 'layout_header.php';
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    function removerAcentos(texto) {
+        return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    }
+
     function filtrarProdutos() {
-        const filtro = document.getElementById('pesquisa').value.toLowerCase();
-        const filtroFornecedor = document.getElementById('filtroFornecedor').value.toLowerCase();
+        const filtro = removerAcentos(document.getElementById('pesquisa').value.toLowerCase());
+        const filtroFornecedor = removerAcentos(document.getElementById('filtroFornecedor').value.toLowerCase());
         const cards = document.querySelectorAll('.produto-card');
 
         cards.forEach(card => {
-            const nome = card.querySelector('.card-title').textContent.toLowerCase();
-            const descricao = card.querySelector('.card-text').textContent.toLowerCase();
-            const fornecedor = card.querySelector('.text-muted').textContent.toLowerCase();
+            const nome = removerAcentos(card.querySelector('.card-title').textContent.toLowerCase());
+            const descricao = removerAcentos(card.querySelector('.card-text').textContent.toLowerCase());
+            const fornecedor = removerAcentos(card.querySelector('.text-muted').textContent.toLowerCase());
+            const codigo = removerAcentos(card.querySelector('.text-muted').textContent.toLowerCase());
 
-            const matchFiltro = nome.includes(filtro) || descricao.includes(filtro);
+            const matchFiltro = nome.includes(filtro) || descricao.includes(filtro) || codigo.includes(filtro);
             const matchFornecedor = !filtroFornecedor || fornecedor.includes(filtroFornecedor);
 
             if (matchFiltro && matchFornecedor) {
                 card.closest('.col').style.display = '';
-                
-                // Destacar texto encontrado
-                if (filtro) {
-                    const nomeElement = card.querySelector('.card-title');
-                    const descricaoElement = card.querySelector('.card-text');
-                    
-                    nomeElement.innerHTML = destacarTexto(nomeElement.textContent, filtro);
-                    descricaoElement.innerHTML = destacarTexto(descricaoElement.textContent, filtro);
-                }
             } else {
                 card.closest('.col').style.display = 'none';
             }
         });
-    }
-
-    function destacarTexto(texto, filtro) {
-        if (!filtro) return texto;
-        const regex = new RegExp(`(${filtro})`, 'gi');
-        return texto.replace(regex, '<span class="highlight">$1</span>');
     }
 </script>
 </body>

@@ -45,9 +45,17 @@
 							<i class="fas fa-boxes"></i> Gerenciar Estoque
 						</a>';
 					}
-					echo '<a href="/ProgWebII/login/executa_logout.php" class="btn btn-outline-danger">Logout</a>';
+					echo '<a href="/ProgWebII/login/executa_logout.php" class="btn btn-outline-danger me-2">Logout</a>';
 				} else {
-					echo '<a href="/ProgWebII/login/login.php" class="btn btn-outline-primary">Login</a>';
+					echo '<a href="/ProgWebII/login/login.php" class="btn btn-outline-primary me-2">Login</a>';
+				}
+
+				// Verifica se não está na página de visualização de produtos
+				$current_page = basename($_SERVER['PHP_SELF']);
+				if ($current_page !== 'visualiza_produtos.php') {
+					echo '<a href="/ProgWebII/visualiza_produtos.php" class="btn btn-outline-primary">
+						<i class="fas fa-home"></i> Voltar aos Produtos
+					</a>';
 				}
 				?>
 			</div>

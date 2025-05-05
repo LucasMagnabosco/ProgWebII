@@ -42,12 +42,6 @@ error_log("Produtos encontrados: " . print_r($produtos, true));
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Meus Produtos</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <style>
-    .highlight {
-        background-color: yellow;
-        font-weight: bold;
-    }
-    </style>
 </head>
 <body class="bg-light">
     <div class="container mt-5">
@@ -64,6 +58,7 @@ error_log("Produtos encontrados: " . print_r($produtos, true));
         <table class="table table-striped" id="tabelaProdutos">
             <thead>
                 <tr>
+                    <th>Código</th>
                     <th>Nome</th>
                     <th>Descrição</th>
                     <th>Ações</th>
@@ -72,6 +67,7 @@ error_log("Produtos encontrados: " . print_r($produtos, true));
             <tbody>
                 <?php foreach ($produtos as $produto): ?>
                     <tr>
+                        <td><?= htmlspecialchars($produto['codigo'] ?? '') ?></td>
                         <td><?= htmlspecialchars($produto['nome']) ?></td>
                         <td><?= htmlspecialchars($produto['descricao']) ?></td>
                         <td>
@@ -86,7 +82,7 @@ error_log("Produtos encontrados: " . print_r($produtos, true));
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Filtro e destaque -->
+    <!-- Filtro -->
     <script>
     function filtrarTabela() {
         var input = document.getElementById("pesquisa");
@@ -94,32 +90,20 @@ error_log("Produtos encontrados: " . print_r($produtos, true));
         var tabela = document.getElementById("tabelaProdutos");
         var trs = tabela.getElementsByTagName("tr");
 
-        for (var i = 1; i < trs.length; i++) { // Começa do 1 para pular o cabeçalho
+        for (var i = 1; i < trs.length; i++) {
             var tds = trs[i].getElementsByTagName("td");
             if (tds.length > 0) {
-                var nomeOriginal = tds[0].textContent;
-                var descricaoOriginal = tds[1].textContent;
+                var codigo = tds[0].textContent.toLowerCase();
+                var nome = tds[1].textContent.toLowerCase();
+                var descricao = tds[2].textContent.toLowerCase();
 
-                var nome = nomeOriginal.toLowerCase();
-                var descricao = descricaoOriginal.toLowerCase();
-
-                if (nome.includes(filtro) || descricao.includes(filtro)) {
+                if (codigo.includes(filtro) || nome.includes(filtro) || descricao.includes(filtro)) {
                     trs[i].style.display = "";
-
-                    // Destacar texto encontrado
-                    tds[0].innerHTML = destacarTexto(nomeOriginal, filtro);
-                    tds[1].innerHTML = destacarTexto(descricaoOriginal, filtro);
                 } else {
                     trs[i].style.display = "none";
                 }
             }
         }
-    }
-
-    function destacarTexto(texto, filtro) {
-        if (!filtro) return texto; // Se filtro vazio, não destaca
-        var regex = new RegExp("(" + filtro + ")", "gi");
-        return texto.replace(regex, '<span class="highlight">$1</span>');
     }
     </script>
 </body>
