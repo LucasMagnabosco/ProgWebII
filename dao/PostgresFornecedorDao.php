@@ -178,7 +178,9 @@ class PostgresFornecedorDao extends PostgresDao implements FornecedorDao {
         $fornecedor->setId($row['id']);
         
         // ID do fornecedor (usando o alias fornecedor_id)
-        $fornecedor->setFornecedorId($row['fornecedor_id']);
+        if (isset($row['fornecedor_id'])) {
+            $fornecedor->setFornecedorId($row['fornecedor_id']);
+        }
         
         error_log("Fornecedor criado - ID do usuário: " . $fornecedor->getId() . 
                  ", ID do fornecedor: " . $fornecedor->getFornecedorId());

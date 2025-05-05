@@ -22,13 +22,15 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 try {
     // Validação dos campos obrigatórios
-    if (empty($_POST['nome']) || empty($_POST['descricao']) || empty($_POST['fornecedor_id'])) {
+    if (empty($_POST['nome']) || empty($_POST['descricao']) || empty($_POST['fornecedor_id']) || empty($_POST['preco']) || empty($_POST['quantidade'])) {
         throw new Exception("Todos os campos obrigatórios devem ser preenchidos.");
     }
 
     $nome = $_POST['nome'];
     $descricao = $_POST['descricao'];
     $fornecedor_id = $_POST['fornecedor_id'];
+    $preco = floatval($_POST['preco']);
+    $quantidade = intval($_POST['quantidade']);
     $foto = $_FILES['foto'] ?? null;
 
     error_log("Dados recebidos - Nome: $nome, Descrição: $descricao, Fornecedor ID: $fornecedor_id");
@@ -54,6 +56,8 @@ try {
         nome: $nome,
         descricao: $descricao,
         fornecedor_id: $fornecedor_id,
+        preco: $preco,
+        quantidade: $quantidade,
         foto: $fotoPath
     );
 

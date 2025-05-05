@@ -71,7 +71,7 @@ include_once 'layout_header.php';
                             <?php if (!empty($produto['foto'])): ?>
                                 <img src="<?= htmlspecialchars($produto['foto']) ?>" class="card-img-top produto-imagem" alt="<?= htmlspecialchars($produto['nome']) ?>">
                             <?php else: ?>
-                                <img src="https://via.placeholder.com/300x200?text=Sem+Imagem" class="card-img-top produto-imagem" alt="Sem imagem">
+                                <img src="./assets/imagem-default.jpg" class="card-img-top produto-imagem" alt="Sem imagem">
                             <?php endif; ?>
                             <div class="card-body d-flex flex-column">
                                 <h5 class="card-title"><?= htmlspecialchars($produto['nome']) ?></h5>
@@ -81,7 +81,7 @@ include_once 'layout_header.php';
                                         Fornecedor: <?= htmlspecialchars($produto['fornecedor_nome']) ?>
                                     </small>
                                 </p>
-                                <button class="btn btn-primary w-100 mt-2">Ver Detalhes</button>
+                                <a href="./produto/detalhes_produto.php?id=<?= $produto['id'] ?>" class="btn btn-primary w-100 mt-2">Ver Detalhes</a>
                             </div>
                         </div>
                     </div>
@@ -101,7 +101,7 @@ include_once 'layout_header.php';
     }
     .produto-imagem {
         height: 200px;
-        object-fit: cover;
+        object-fit: contain;
     }
     .filtro-section {
         background-color: #f8f9fa;

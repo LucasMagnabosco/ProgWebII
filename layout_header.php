@@ -29,7 +29,7 @@
 <body class="bg-light">
 	<nav class="navbar navbar-expand-lg navbar-light fixed-top">
 		<div class="container-fluid">
-			<a class="navbar-brand" href="index.php"><?php echo $page_title; ?></a>
+			<a class="navbar-brand" href="/ProgWebII/visualiza_produtos.php"><?php echo $page_title; ?></a>
 			<div class="ms-auto d-flex align-items-center">
 				<?php
 				include_once "comum.php";

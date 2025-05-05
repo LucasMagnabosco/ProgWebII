@@ -25,6 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $produto->setNome($_POST['nome']);
     $produto->setDescricao($_POST['descricao']);
     $produto->setFornecedorId($_POST['fornecedor_id']);
+    $produto->setPreco($_POST['preco']);
+    $produto->setQuantidade($_POST['quantidade']);
 
     // Atualizar imagem, se fornecida
     if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
@@ -74,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <textarea name="descricao" id="descricao" class="form-control" rows="3" required><?= htmlspecialchars($produto->getDescricao()) ?></textarea>
                     </div>
 
-                    <div class="mb-3">
+                    <!-- <div class="mb-3">
                         <label for="fornecedor_id" class="form-label">Fornecedor</label>
                         <select name="fornecedor_id" id="fornecedor_id" class="form-select" required>
                             <?php foreach ($fornecedores as $f): ?>
@@ -83,6 +85,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 </option>
                             <?php endforeach; ?>
                         </select>
+                    </div> -->
+
+                    <div class="mb-3">
+                        <label for="preco" class="form-label">Preço</label>
+                        <input type="number" id="preco" name="preco" class="form-control" min="0" step="0.01" value="<?= $produto->getPreco() ?>" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="quantidade" class="form-label">Quantidade em Estoque</label>
+                        <input type="number" id="quantidade" name="quantidade" class="form-control" min="0" value="<?= htmlspecialchars($produto->getQuantidade()) ?>" required />
                     </div>
 
                     <div class="mb-3">

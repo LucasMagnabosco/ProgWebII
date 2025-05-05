@@ -11,8 +11,8 @@ class PostgresProdutoDao implements ProdutoDao {
 
     public function insere(Produto $produto): bool {
         try {
-            $sql = "INSERT INTO produto (nome, descricao, fornecedor_id, foto) 
-                    VALUES (:nome, :descricao, :fornecedor_id, :foto)";
+            $sql = "INSERT INTO produto (nome, descricao, fornecedor_id, quantidade, preco, foto) 
+                    VALUES (:nome, :descricao, :fornecedor_id, :quantidade, :preco, :foto)";
             
             $stmt = $this->conn->prepare($sql);
             
@@ -20,7 +20,9 @@ class PostgresProdutoDao implements ProdutoDao {
                 ':nome' => $produto->getNome(),
                 ':descricao' => $produto->getDescricao(),
                 ':foto' => $produto->getFoto(),
-                ':fornecedor_id' => $produto->getFornecedorId()
+                ':fornecedor_id' => $produto->getFornecedorId(),
+                ':quantidade' => $produto->getQuantidade(),
+                ':preco' => $produto->getPreco()
             ];
 
             error_log("Tentando inserir produto com parâmetros: " . print_r($params, true));
@@ -71,7 +73,7 @@ class PostgresProdutoDao implements ProdutoDao {
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($row) {
-            return new Produto($row['nome'], $row['descricao'], $row['fornecedor_id'], $row['foto']);  // Adiciona fornecedor_id
+            return new Produto($row['nome'], $row['descricao'], $row['fornecedor_id'], $row['preco'], $row['quantidade'], $row['foto']);
         }
 
         return null;
@@ -86,7 +88,8 @@ class PostgresProdutoDao implements ProdutoDao {
     // Método para atualizar um produto
     public function atualiza(Produto $produto): bool {
         var_dump($produto);
-        $sql = "UPDATE produto SET nome = :nome, descricao = :descricao, foto = :foto, fornecedor_id = :fornecedor_id 
+        $sql = "UPDATE produto SET nome = :nome, descricao = :descricao, foto = :foto,
+                preco = :preco, quantidade = :quantidade
                 WHERE id = :id";
         $stmt = $this->conn->prepare($sql);
         // var_dump($stmt->execute([
@@ -100,8 +103,9 @@ class PostgresProdutoDao implements ProdutoDao {
             ':nome' => $produto->getNome(),
             ':descricao' => $produto->getDescricao(),
             ':foto' => $produto->getFoto(),
-            ':fornecedor_id' => $produto->getFornecedorId(),
-            ':id' => $produto->getId()
+            ':id' => $produto->getId(),
+            ':preco' => $produto->getPreco(),
+            ':quantidade' => $produto->getQuantidade()
         ]);
     }
     
