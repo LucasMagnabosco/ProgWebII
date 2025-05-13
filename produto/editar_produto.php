@@ -40,13 +40,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (move_uploaded_file($_FILES['foto']['tmp_name'], $fotoPath)) {
             $produto->setFoto($fotoPath);
         }
+    }   else {
+        $produto->setFoto(null); // <- isso garante que a imagem não será sobrescrita
     }
 
     if ($produtoDao->atualiza($produto)) {
         header("Location: produtos.php?msg=Produto atualizado com sucesso&tipo=success");
     } else {
-        header("Location: produtos.php?msg=Erro ao atualizar produto&tipo=danger");
+        // Mantém a imagem atual se nenhuma nova for enviada
+        $produtoExistente = $produtoDao->buscaPorId($id);
+        $produto->setFoto($produtoExistente ? $produtoExistente->getFoto() : null);
     }
+
 
     exit;
 }

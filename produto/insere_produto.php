@@ -1,27 +1,43 @@
-<!-- controller -->
 <?php
 
 include_once '../fachada.php';
 include_once '../comum.php';
 
-// Inicia a sessão se ainda não estiver iniciada
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Verifica se o usuário está logado e é fornecedor
-if (!isset($_SESSION["usuario_id"]) || !isset($_SESSION["is_fornecedor"]) || !$_SESSION["is_fornecedor"]) {
-    header("Location: /ProgWebII/login/login.php");
+$isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
+
+function jsonResponse($tipo, $msg) {
+    header('Content-Type: application/json');
+    echo json_encode([
+        'tipo' => $tipo,
+        'msg' => $msg
+    ]);
     exit();
 }
 
+// Verifica se o usuário está logado e é fornecedor
+if (!isset($_SESSION["usuario_id"]) || !isset($_SESSION["is_fornecedor"]) || !$_SESSION["is_fornecedor"]) {
+    if ($isAjax) {
+        jsonResponse("error", "Acesso não autorizado.");
+    } else {
+        header("Location: /ProgWebII/login/login.php");
+        exit();
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header("Location: produtos.php?msg=Método de requisição inválido");
-    exit;
+    if ($isAjax) {
+        jsonResponse("error", "Método de requisição inválido.");
+    } else {
+        header("Location: produtos.php?msg=Método de requisição inválido");
+        exit();
+    }
 }
 
 try {
-    // Validação dos campos obrigatórios
     if (empty($_POST['nome']) || empty($_POST['descricao']) || empty($_POST['fornecedor_id']) || empty($_POST['preco']) || empty($_POST['quantidade'])) {
         throw new Exception("Todos os campos obrigatórios devem ser preenchidos.");
     }
@@ -32,55 +48,42 @@ try {
     $preco = floatval($_POST['preco']);
     $quantidade = intval($_POST['quantidade']);
     $codigo = $_POST['codigo'] ?? null;
-    $foto = $_FILES['foto'] ?? null;
 
-    error_log("Dados recebidos - Nome: $nome, Descrição: $descricao, Fornecedor ID: $fornecedor_id, Código: $codigo");
-
-    // Verificação e tratamento da imagem
-    $fotoPath = null;
-    if ($foto && $foto['error'] === UPLOAD_ERR_OK) {
-        $uploadDir = __DIR__ . '/uploads/';
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
-        }
-
-        $fotoNome = uniqid('img_') . '_' . basename($foto['name']);
-        $fotoPath = 'uploads/' . $fotoNome;
-
-        if (!move_uploaded_file($foto['tmp_name'], $uploadDir . $fotoNome)) {
-            throw new Exception("Erro ao salvar a imagem.");
-        }
+    $foto = null;
+    if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
+        $foto = file_get_contents($_FILES['foto']['tmp_name']);
     }
 
-    // Criação do objeto Produto
     $produto = new Produto(
         nome: $nome,
         descricao: $descricao,
         fornecedor_id: $fornecedor_id,
         preco: $preco,
         quantidade: $quantidade,
-        foto: $fotoPath,
+        foto: $foto,
         codigo: $codigo
     );
 
-    error_log("Objeto Produto criado - Nome: " . $produto->getNome() . 
-              ", Descrição: " . $produto->getDescricao() . 
-              ", Fornecedor ID: " . $produto->getFornecedorId() . 
-              ", Código: " . $produto->getCodigo() . 
-              ", Foto: " . $produto->getFoto());
-
-    // Inserção no banco de dados
     $dao = $factory->getProdutoDao();
-    
+
     if (!$dao->insere($produto)) {
         throw new Exception("Erro ao inserir o produto no banco de dados.");
     }
 
-    header("Location: produtos.php?msg=Produto cadastrado com sucesso&tipo=success");
-    exit();
+    if ($isAjax) {
+        jsonResponse("success", "Produto cadastrado com sucesso");
+    } else {
+        header("Location: produtos.php?msg=Produto cadastrado com sucesso&tipo=success");
+        exit();
+    }
 
 } catch (Exception $e) {
     error_log("Erro ao cadastrar produto: " . $e->getMessage());
-    header("Location: produtos.php?msg=" . urlencode($e->getMessage()) . "&tipo=danger");
-    exit();
+
+    if ($isAjax) {
+        jsonResponse("error", $e->getMessage());
+    } else {
+        header("Location: produtos.php?msg=" . urlencode($e->getMessage()) . "&tipo=danger");
+        exit();
+    }
 }

@@ -1,0 +1,2 @@
+ALTER TABLE produto DROP COLUMN foto;
+ALTER TABLE produto ADD COLUMN foto BYTEA;

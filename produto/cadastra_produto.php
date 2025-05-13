@@ -1,4 +1,3 @@
-<!-- view -->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -6,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Cadastro de Produto</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- jQuery -->
     <style>
         .container {
             margin-top: 100px;
@@ -60,7 +60,7 @@
                             </div>
                         <?php endif; ?>
 
-                        <form action="insere_produto.php" method="post" enctype="multipart/form-data">
+                        <form id="cadastroProdutoForm" method="post" enctype="multipart/form-data">
                             <div class="mb-3">
                                 <label for="codigo" class="form-label">Código do Produto</label>
                                 <input type="text" id="codigo" name="codigo" class="form-control" placeholder="Código de identificação do produto" />
@@ -104,6 +104,37 @@
             </div>
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $("#cadastroProdutoForm").submit(function(e) {
+                e.preventDefault(); // Previne o envio tradicional
+
+                var formData = new FormData(this); // Pega todos os dados do formulário
+
+                $.ajax({
+                    url: "insere_produto.php",
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    dataType: "json", // Importante: diz que a resposta esperada é JSON
+                    success: function(response) {
+                        if (response.tipo === "success") {
+                            window.location.href = "produtos.php?msg=" + encodeURIComponent(response.msg) + "&tipo=success";
+                        } else {
+                            alert("Erro ao cadastrar produto: " + (response.msg || "Erro desconhecido."));
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        alert("Erro ao cadastrar produto: " + error);
+                    }
+                });
+            });
+        });
+    </script>
+
 </body>
 </html>
