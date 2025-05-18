@@ -51,6 +51,17 @@ try {
 
     $foto = null;
     if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
+        // Adicionar validação do tipo de arquivo
+        $tipo_permitido = ['image/jpeg', 'image/png'];
+        if (!in_array($_FILES['foto']['type'], $tipo_permitido)) {
+            throw new Exception("Tipo de arquivo não permitido. Use apenas JPG ou PNG.");
+        }
+        
+        // Adicionar validação do tamanho (exemplo: 5MB)
+        if ($_FILES['foto']['size'] > 5 * 1024 * 1024) {
+            throw new Exception("A imagem deve ter no máximo 5MB.");
+        }
+        
         $foto = file_get_contents($_FILES['foto']['tmp_name']);
     }
 

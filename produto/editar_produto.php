@@ -29,31 +29,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $produto->setQuantidade($_POST['quantidade']);
     $produto->setCodigo($_POST['codigo']);
 
-    // Atualizar imagem, se fornecida
+    // Processa a foto apenas se uma nova foi enviada
     if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
-        $uploadDir = 'uploads/';
-        if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
-
-        $fotoNome = uniqid('img_') . '_' . basename($_FILES['foto']['name']);
-        $fotoPath = $uploadDir . $fotoNome;
-
-        if (move_uploaded_file($_FILES['foto']['tmp_name'], $fotoPath)) {
-            $produto->setFoto($fotoPath);
+        $tipo_permitido = ['image/jpeg', 'image/png'];
+        if (!in_array($_FILES['foto']['type'], $tipo_permitido)) {
+            throw new Exception("Tipo de arquivo não permitido. Use apenas JPG ou PNG.");
         }
-    }   else {
-        $produto->setFoto(null); // <- isso garante que a imagem não será sobrescrita
+        
+        // Adicionar validação do tamanho (exemplo: 5MB)
+        if ($_FILES['foto']['size'] > 5 * 1024 * 1024) {
+            throw new Exception("A imagem deve ter no máximo 5MB.");
+        }
+        
+        $foto = file_get_contents($_FILES['foto']['tmp_name']);
+        $produto->setFoto($foto);
     }
 
     if ($produtoDao->atualiza($produto)) {
         header("Location: produtos.php?msg=Produto atualizado com sucesso&tipo=success");
+        exit;
     } else {
-        // Mantém a imagem atual se nenhuma nova for enviada
-        $produtoExistente = $produtoDao->buscaPorId($id);
-        $produto->setFoto($produtoExistente ? $produtoExistente->getFoto() : null);
+        throw new Exception("Erro ao atualizar produto");
     }
-
-
-    exit;
 }
 ?>
 
@@ -142,7 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <input type="file" name="foto" id="foto" class="form-control" accept="image/*">
                                 <?php if ($produto->getFoto()): ?>
                                     <div class="mt-2">
-                                        <img src="<?= $produto->getFoto() ?>" alt="Foto atual" style="max-width: 150px;">
+                                        <img src="recupera_imagem.php?id=<?= $produto->getId() ?>" alt="Foto atual" style="max-width: 150px;">
                                     </div>
                                 <?php endif; ?>
                             </div>

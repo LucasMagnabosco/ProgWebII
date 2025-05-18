@@ -30,7 +30,8 @@ include_once '../layout_header.php';
 
 
 $produtoDao = $factory->getProdutoDao();
-$produtos = $produtoDao->buscaPorFornecedor($fornecedor->getFornecedorId());
+$produtosJ = $produtoDao->buscaPorFornecedorFormatados($fornecedor->getFornecedorId());
+$produtos = json_decode($produtosJ, true);
 
 error_log("Produtos encontrados: " . print_r($produtos, true));
 ?>

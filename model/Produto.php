@@ -86,4 +86,17 @@ class Produto {
     public function setQuantidade($quantidade) {
         $this->quantidade = $quantidade;
     }
+
+    public function toJson(): array {
+        return [
+            'id' => $this->id,
+            'nome' => $this->nome,
+            'descricao' => $this->descricao,
+            'preco' => $this->preco,
+            'quantidade' => $this->quantidade,
+            'fornecedor_id' => $this->fornecedor_id,
+            'codigo' => $this->codigo ?? 'Não informado',
+            'tem_foto' => $this->foto !== null && $this->foto !== ''
+        ];
+    }
 }
