@@ -140,9 +140,44 @@ class PostgresProdutoDao implements ProdutoDao
         return $produtos;
     }
 
-    public function buscaTodosFormatados()
+    public function buscaTodosPaginado($inicio,$quantos) {
+        $usuarios = array();
+
+        $query = "SELECT 
+                    p.id, p.nome, p.descricao, p.foto, p.codigo,
+                    p.preco, p.quantidade, p.fornecedor_id
+                    FROM produto p" . 
+                    " ORDER BY id ASC" .
+                    " LIMIT ? OFFSET ?";
+     
+        $stmt = $this->conn->prepare( $query );
+        $stmt->bindParam(1, $quantos);
+        $stmt->bindParam(2, $inicio);
+        $stmt->execute();
+
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $produtos = array();
+
+        foreach ($rows as $row) {
+            $produto = new Produto(
+                $row['nome'],
+                $row['descricao'],
+                $row['fornecedor_id'],
+                $row['preco'],
+                $row['quantidade'],
+                $row['foto'],
+                $row['id'],
+                $row['codigo']
+            );
+            $produtos[] = $produto;
+        }
+        return $produtos;
+    }
+
+    public function buscaTodosFormatados($inicio,$quantos)
     {
-        $produtos = $this->buscaTodos();
+        $produtos = $this->buscaTodosPaginados($inicio,$quantos);
         $produtosJSON = [];
         foreach ($produtos as $produto) {
             $produtosJSON[] = $produto->toJson();
@@ -188,19 +223,24 @@ class PostgresProdutoDao implements ProdutoDao
         return json_encode($produtosJSON, JSON_PRETTY_PRINT);
     }
 
-    public function buscaFiltrada($termo)
+    public function buscaFiltrada($nome,$inicio,$quantos)
     {
         $produtos = array();
 
         $sql = "SELECT * FROM produto 
                 WHERE codigo ILIKE :termo 
-                OR nome ILIKE :termo";
+                OR nome ILIKE :termo".
+                " ORDER BY id ASC" .
+                " LIMIT ? OFFSET ?";;
 
-
-
-        $stmt = $this->conn->prepare($sql);
-        $stmt->execute([':termo' => '%' . $termo . '%']);
+        $stmt = $this->conn->prepare( $query );
+        $stmt->bindValue(1, '%' . strtoupper($nome) . '%');
+        $stmt->bindValue(2, $quantos);
+        $stmt->bindValue(3, $inicio);                $stmt->execute();
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $filter_query = $query . "LIMIT " .$quantos. " OFFSET " . $inicio . '';
+        error_log("---> DAO Query : " . $filter_query);
 
         foreach ($rows as $row) {
             $produto = new Produto(
@@ -240,6 +280,41 @@ class PostgresProdutoDao implements ProdutoDao
         }
 
         return $foto;
+    }
+
+    public function contaTodos() {
+
+        $quantos = 0;
+
+        $query = "SELECT COUNT(*) AS contagem FROM produto";
+     
+        $stmt = $this->conn->prepare( $query );
+        $stmt->execute();
+
+        if ($row = $stmt->fetch(PDO::FETCH_ASSOC)){
+            extract($row);
+            $quantos = $contagem;
+        }
+        
+        return $quantos;
+    }
+
+    public function contaComNome($nome) {
+        $quantos = 0;
+        $query = "SELECT COUNT(*) AS contagem FROM produto
+        WHERE UPPER(nome) LIKE ? ";
+     
+        $stmt = $this->conn->prepare( $query );
+        $stmt->bindValue(1, '%' . strtoupper($nome) . '%');
+        
+        $stmt->execute();
+
+        if ($row = $stmt->fetch(PDO::FETCH_ASSOC)){
+            extract($row);
+            $quantos = $contagem;
+        }
+        
+        return $quantos;
     }
 
 }

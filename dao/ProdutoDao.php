@@ -12,4 +12,7 @@ interface ProdutoDao {
     public function buscaFiltrada($termo);
     public function buscaPorFornecedorFormatados($fornecedorId);
     public function buscaFoto($id);
+    public function contaComNome($nome);
+    public function contaTodos();
+    public function buscaTodosPaginado($inicio,$quantos);
 }

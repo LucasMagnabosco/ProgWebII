@@ -58,7 +58,7 @@ try {
         }
         
         // Adicionar validação do tamanho (exemplo: 5MB)
-        if ($_FILES['foto']['size'] > 5 * 1024 * 1024) {
+        if ($_FILES['foto']['size'] > 8 * 1024 * 1024) {
             throw new Exception("A imagem deve ter no máximo 5MB.");
         }
         
