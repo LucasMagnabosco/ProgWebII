@@ -24,7 +24,7 @@ include_once 'layout_header.php';
 // Busca os produtos formatados em JSON
 $produtoDao = $factory->getProdutoDao();
 $inicio = 0; 
-$quantos = 5; 
+$quantos = 6; 
 $produtosJson = $produtoDao->buscaTodosFormatados($inicio, $quantos);
 
 // Busca os fornecedores

@@ -8,7 +8,7 @@ $fornecedor = $_POST['fornecedor'] ?? '';
 
 $dao = $factory->getProdutoDao();
 
-$limit = '5';
+$limit = '6';
 $page = isset($_POST['page']) ? (int)$_POST['page'] : 1;
 if($page > 1) {
     $start = (($page - 1) * $limit);
