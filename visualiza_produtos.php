@@ -23,7 +23,9 @@ include_once 'layout_header.php';
 
 // Busca os produtos formatados em JSON
 $produtoDao = $factory->getProdutoDao();
-$produtosJson = $produtoDao->buscaTodosFormatados();
+$inicio = 0; 
+$quantos = 5; 
+$produtosJson = $produtoDao->buscaTodosFormatados($inicio, $quantos);
 
 // Busca os fornecedores
 $fornecedorDao = $factory->getFornecedorDao();
@@ -38,52 +40,23 @@ $fornecedoresArr = array_map(function ($f) {
 ?>
 
 <div class="container mt-4">
-    <!-- Barra de Pesquisa, Filtros e Botões -->
-    <div class="row mb-4 align-items-center">
-        <!-- Filtros -->
-        <div class="col-md-3">
-            <div class="filtro-section">
-                <h5>Filtros</h5>
-                <div class="mb-3">
-                    <label class="form-label">Fornecedores</label>
-                    <select class="form-select" id="filtroFornecedor" onchange="filtrarProdutos()">
-                        <option value="">Todos</option>
-                        <?php foreach ($fornecedores as $fornecedor): ?>
-                            <option value="<?= $fornecedor->getId() ?>"><?= $fornecedor->getNome() ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <!-- Barra de Pesquisa e Botões -->
-        <div class="col-md-9">
-            <div class="row justify-content-end">
-                <div class="col-md-4">
-                    <div class="input-group">
-                        <input type="text" id="pesquisa" class="form-control" placeholder="Buscar produtos..."
-                            onkeyup="filtrarProdutos()">
-                        <button class="btn btn-primary" type="button">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </div>
-                </div>
+    <div class="row mb-3">
+        <div class="col-md-6 offset-md-6">
+            <div class="input-group input-group-sm">
+                <input type="text" id="pesquisa" class="form-control form-control-sm" placeholder="Pesquisar produtos...">
+                <span class="input-group-text bg-primary text-white">
+                    <i class="fas fa-search"></i>
+                </span>
             </div>
         </div>
     </div>
 
-    <!-- Lista de Produtos -->
-    <div class="row">
-        <div class="col-12">
-            <div id="loading" class="text-center" style="display: none;">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Carregando...</span>
-                </div>
-            </div>
-            <div class="row row-cols-1 row-cols-md-3 g-4" id="listaProdutos">
-                <!-- Produtos serão carregados aqui via JavaScript -->
-            </div>
-        </div>
+    <div class="row row-cols-1 row-cols-md-3 g-4" id="listaProdutos">
+        <!-- Produtos serão carregados aqui -->
+    </div>
+
+    <div id="pagination-container" class="d-flex justify-content-center mt-4">
+        <!-- Paginação será carregada aqui -->
     </div>
 </div>
 
@@ -127,70 +100,93 @@ $fornecedoresArr = array_map(function ($f) {
     function exibirProdutos(produtosParaExibir) {
         const listaProdutos = document.getElementById('listaProdutos');
         
-        // Log para debug
-        console.log('Produtos:', produtosParaExibir.map(p => ({
-            id: p.id,
-            nome: p.nome,
-            tem_foto: p.tem_foto,
-            url: p.tem_foto ? `produto/recupera_imagem.php?id=${p.id}&t=${Date.now()}` : './assets/imagem-default.jpg'
-        })));
-
-        listaProdutos.innerHTML = produtosParaExibir.map(produto => {
-            const imageUrl = produto.tem_foto ? `produto/recupera_imagem.php?id=${produto.id}&t=${Date.now()}` : './assets/imagem-default.jpg';
-            console.log(`Gerando URL para ${produto.nome}:`, imageUrl);
-            
-            return `
-            <div class="col">
-                <div class="card produto-card h-100">
-                    <img 
-                    src="${imageUrl}" 
-                    class="produto-imagem" 
-                    alt="${produto.nome}"
-                    onerror="console.error('Erro ao carregar imagem:', this.src); this.src='./assets/imagem-default.jpg'"
-                    onload="console.log('Imagem carregada com sucesso:', this.src)"
-                    >
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title">${produto.nome}</h5>
-                        <p class="card-text">${produto.descricao}</p>
-                        <p class="card-text">
-                            <small class="text-muted">
-                                Código: ${produto.codigo}<br>
-                                Fornecedor: ${(() => {
-                                    const fornecedor = fornecedores.find(f => f.id == produto.fornecedor_id);
-                                    return fornecedor ? fornecedor.nome : '';
-                                })()}
-                            </small>
-                        </p>
-                        <a href="./produto/detalhes_produto.php?id=${produto.id}" class="btn btn-primary w-100 mt-2">Ver Detalhes</a>
+        if (typeof produtosParaExibir === 'string') {
+            produtosParaExibir = JSON.parse(produtosParaExibir);
+        }
+        
+        if (produtosParaExibir && produtosParaExibir.length > 0) {
+            listaProdutos.innerHTML = produtosParaExibir.map(produto => {
+                const imageUrl = produto.foto ? 
+                    `data:${produto.foto_tipo};base64,${produto.foto}` : 
+                    './assets/imagem-default.jpg';
+                
+                return `
+                <div class="col">
+                    <div class="card produto-card h-100">
+                        <img 
+                            src="${imageUrl}" 
+                            class="produto-imagem" 
+                            alt="${produto.nome}"
+                            onerror="this.src='./assets/imagem-default.jpg'"
+                        >
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">${produto.nome}</h5>
+                            <p class="card-text">${produto.descricao}</p>
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    Código: ${produto.codigo}<br>
+                                    Fornecedor: ${(() => {
+                                        const fornecedor = fornecedores.find(f => f.id == produto.fornecedor_id);
+                                        return fornecedor ? fornecedor.nome : '';
+                                    })()}
+                                </small>
+                            </p>
+                            <a href="./produto/detalhes_produto.php?id=${produto.id}" class="btn btn-primary w-100 mt-2">Ver Detalhes</a>
+                        </div>
                     </div>
-                </div>
-            </div>`;
-        }).join('');
-    }
-    document.addEventListener('DOMContentLoaded', () => exibirProdutos(produtos));
-
-    function removerAcentos(texto) {
-        return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                </div>`;
+            }).join('');
+        } else {
+            listaProdutos.innerHTML = '<div class="col-12 text-center">Nenhum produto encontrado</div>';
+        }
     }
 
-    function filtrarProdutos() {
+    function filtrarProdutos(page = 1) {
         const pesquisa = $("#pesquisa").val();
         const fornecedor = $("#filtroFornecedor").val();
+        
         $.ajax({
             type: 'POST',
             dataType: 'json',
             url: 'produto/busca_ajax.php',
-            data: { pesquisa: pesquisa, fornecedor: fornecedor },
+            data: { 
+                pesquisa: pesquisa, 
+                page: page
+            },
             success: function (data) {
-                exibirProdutos(data);
+                console.log('Dados recebidos:', data); // Debug
+                exibirProdutos(data.produtos);
+                if (data.pagination) {
+                    $('#pagination-container').html(data.pagination);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Erro na requisição:', error);
+                console.log('Resposta do servidor:', xhr.responseText);
             }
         });
     }
-    $('#pesquisa').on('keyup', function () {
-        filtrarProdutos();
-    });
-    $('#filtroFornecedor').on('change', function () {
-        filtrarProdutos();
+
+    // Carrega a página inicial quando o documento estiver pronto
+    $(document).ready(function() {
+        exibirProdutos(produtos);
+        filtrarProdutos(1);
     });
 
+    $('#pesquisa').on('keyup', function () {
+        filtrarProdutos(1);
+    });
+
+    $('#filtroFornecedor').on('change', function () {
+        filtrarProdutos(1);
+    });
+
+    // Função para lidar com cliques na paginação
+    $(document).on('click', '.pagination a', function(e) {
+        e.preventDefault();
+        const page = $(this).data('page_number');
+        if (page) {
+            filtrarProdutos(page);
+        }
+    });
 </script>
