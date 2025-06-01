@@ -38,12 +38,6 @@ include_once '../layout_header.php';
             
             <div id="mensagem" class="alert" style="display: none;"></div>
 
-            <?php if (isset($_GET['success']) || isset($_GET['error'])): ?>
-                <div class="alert alert-<?php echo isset($_GET['success']) ? 'success' : 'danger'; ?>">
-                    <?php echo htmlspecialchars($_GET['message'] ?? 'Operação concluída.'); ?>
-                </div>
-            <?php endif; ?>
-
             <div class="row mb-3">
                 <div class="col-md-6 offset-md-6">
                     <div class="input-group input-group-sm">
@@ -148,7 +142,7 @@ $(document).ready(function() {
                 }
             });
         } else {
-            checkbox.prop('checked', !isAdmin); // Reverte o checkbox se o usuário cancelar
+            checkbox.prop('checked', !isAdmin);
         }
     });
 });
