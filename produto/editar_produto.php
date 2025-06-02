@@ -135,9 +135,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
 
                             <div class="mb-3">
-                                <label for="foto" class="form-label">Foto do Produto</label>
+                                <label for="foto" class="form-label">Foto do Produto (opcional)</label>
                                 <input type="file" name="foto" id="foto" class="form-control" accept="image/*">
-                               
+                                <?php if ($produto->getFoto()): ?>
+                                    <div class="mt-2">
+                                        <img src="recupera_imagem.php?id=<?= $produto->getId() ?>" alt="Foto atual" style="max-width: 150px;">
+                                    </div>
+                                <?php endif; ?>
                             </div>
 
                             <div class="d-grid">

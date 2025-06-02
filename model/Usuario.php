@@ -9,7 +9,6 @@ class Usuario {
     private $endereco = null;
     private $tipo; // 'fornecedor' ou 'normal'
     private $cartaoCredito = null;
-    private $is_admin = false;
  
 
     public function __construct(
@@ -27,7 +26,6 @@ class Usuario {
         $this->tipo = false;
         $this->cartaoCredito = $cartaoCredito;
         $this->endereco = $endereco;
-        $this->is_admin = false;
     }
 
     // Getters
@@ -60,10 +58,6 @@ class Usuario {
     }
 
     public function getSenha() { return $this->senha; }
-
-    public function isAdmin(): bool {
-        return $this->is_admin;
-    }
 
     // Setters
     public function setNome(string $nome) {
@@ -101,11 +95,6 @@ class Usuario {
 
     public function setEndereco($endereco) {
         $this->endereco = $endereco;
-    }
-
-    public function setIsAdmin(bool $is_admin) {
-        $this->is_admin = $is_admin;
-        return $this;
     }
 }
 ?>

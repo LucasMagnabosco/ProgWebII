@@ -40,15 +40,6 @@
 				
 				if(isset($_SESSION["usuario_id"])) {
 					echo '<span class="me-3">Olá, ' . htmlspecialchars($_SESSION["usuario_nome"]) . '</span>';
-					
-					// Verifica se o usuário é admin
-					$usuario = $factory->getUsuarioDao()->buscaPorId($_SESSION["usuario_id"]);
-					if($usuario && $usuario->isAdmin()) {
-						echo '<a href="/ProgWebII/usuario/permissoes.php" class="btn btn-info me-2">
-							<i class="fas fa-user-shield"></i> Gerenciar Permissões
-						</a>';
-					}
-					
 					if(isset($_SESSION["is_fornecedor"]) && $_SESSION["is_fornecedor"]) {
 						echo '<a href="/ProgWebII/produto/produtos.php" class="btn btn-warning me-2">
 							<i class="fas fa-boxes"></i> Gerenciar Estoque

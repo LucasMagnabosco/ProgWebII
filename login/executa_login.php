@@ -26,7 +26,7 @@ try {
         $_SESSION["usuario_id"] = $usuario->getId();
         $_SESSION["usuario_nome"] = $usuario->getNome();
         $_SESSION["is_fornecedor"] = $usuario->getTipo();
-        $_SESSION["is_admin"] = $usuario->isAdmin();
+        
         header("Location: ../visualiza_produtos.php"); 
         exit; 
     } else {
