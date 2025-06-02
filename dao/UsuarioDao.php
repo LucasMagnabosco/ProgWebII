@@ -10,5 +10,6 @@ interface UsuarioDao {
     public function buscaTodos();
     public function buscaPorTipo($tipo);
     public function atualizarTipo($usuario, $novoTipo);
+    public function atualizarStatusAdmin($usuario, $isAdmin);
 }
 ?>

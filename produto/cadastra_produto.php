@@ -88,7 +88,7 @@
                             <input type="hidden" name="fornecedor_id" value="<?= $fornecedor->getFornecedorId() ?>" />
 
                             <div class="mb-3">
-                                <label for="foto" class="form-label">Foto do Produto (opcional)</label>
+                                <label for="foto" class="form-label">Foto do Produto</label>
                                 <input type="file" id="foto" name="foto" class="form-control" accept="image/*" />
                             </div>
 

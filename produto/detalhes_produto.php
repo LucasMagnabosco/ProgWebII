@@ -25,6 +25,20 @@ if (!$produto) {
     exit();
 }
 
+// Prepara a imagem do produto
+$foto = $produto->getFoto();
+$fotoBase64 = null;
+$fotoTipo = null;
+
+if ($foto) {
+    if (is_resource($foto)) {
+        $foto = stream_get_contents($foto);
+    }
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $fotoTipo = $finfo->buffer($foto);
+    $fotoBase64 = base64_encode($foto);
+}
+
 $page_title = "Detalhes do Produto";
 include_once '../layout_header.php';
 ?>
@@ -40,13 +54,23 @@ include_once '../layout_header.php';
         .card {
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
+        .produto-imagem {
+            max-height: 500px;
+            object-fit: contain;
+            background-color: #f8f9fa;
+        }
     </style>
 </head>
 <body class="bg-light">
     <div class="container mt-5">
         <div class="row">
             <div class="col-md-8">
-                <img src="../assets/imagem-default.jpg"" class="img-fluid rounded produto-imagem" alt="<?= htmlspecialchars($produto->getNome()) ?>">
+                <img 
+                    src="<?= $fotoBase64 ? "data:{$fotoTipo};base64,{$fotoBase64}" : '../assets/imagem-default.jpg' ?>" 
+                    class="img-fluid rounded produto-imagem" 
+                    alt="<?= htmlspecialchars($produto->getNome()) ?>"
+                    onerror="this.src='../assets/imagem-default.jpg'"
+                >
             </div>
             <div class="col-md-4">
                 <?php if ($produto): ?>
