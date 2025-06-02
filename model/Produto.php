@@ -88,6 +88,21 @@ class Produto {
     }
 
     public function toJson(): array {
+        $foto = $this->foto;
+        if (is_resource($foto)) {
+            $foto = stream_get_contents($foto);
+        }
+        
+        $fotoBase64 = null;
+        $fotoTipo = null;
+        
+        if ($foto) {
+            // Detecta o tipo da imagem
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+            $fotoTipo = $finfo->buffer($foto);
+            $fotoBase64 = base64_encode($foto);
+        }
+        
         return [
             'id' => $this->id,
             'nome' => $this->nome,
@@ -96,7 +111,8 @@ class Produto {
             'quantidade' => $this->quantidade,
             'fornecedor_id' => $this->fornecedor_id,
             'codigo' => $this->codigo ?? 'Não informado',
-            'tem_foto' => $this->foto !== null && $this->foto !== ''
+            'foto' => $fotoBase64,
+            'foto_tipo' => $fotoTipo
         ];
     }
 }

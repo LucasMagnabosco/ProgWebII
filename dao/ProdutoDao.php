@@ -7,12 +7,10 @@ interface ProdutoDao {
     public function remove($id);
     public function atualiza(Produto $produto);
     public function buscaPorFornecedor($fornecedorId);
-    public function buscaTodosFormatados();
+    public function buscaTodosFormatados($inicio,$quantos);
+    public function buscaTodosPaginado($inicio,$quantos);
 
-    public function buscaFiltrada($termo);
-    public function buscaPorFornecedorFormatados($fornecedorId);
-    public function buscaFoto($id);
+    public function buscaFiltrada($termo,$inicio,$quantos);
     public function contaComNome($nome);
     public function contaTodos();
-    public function buscaTodosPaginado($inicio,$quantos);
 }

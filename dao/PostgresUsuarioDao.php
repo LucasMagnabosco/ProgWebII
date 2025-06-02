@@ -13,8 +13,8 @@ class PostgresUsuarioDao extends PostgresDao implements UsuarioDao
     public function insere($usuario)
     {
         $query = "INSERT INTO " . $this->table_name .
-            " (nome, email, senha, telefone, endereco_id, tipo, cartao_credito) VALUES" .
-            " (:nome, :email, :senha, :telefone, :endereco_id, :tipo, :cartao_credito)";
+            " (nome, email, senha, telefone, endereco_id, tipo, cartao_credito, is_admin) VALUES" .
+            " (:nome, :email, :senha, :telefone, :endereco_id, :tipo, :cartao_credito, :is_admin)";
 
         $stmt = $this->conn->prepare($query);
 
@@ -30,6 +30,7 @@ class PostgresUsuarioDao extends PostgresDao implements UsuarioDao
         $tipo = $usuario->getTipo() ? 'true' : 'false';
         $stmt->bindValue(":tipo", $tipo, PDO::PARAM_BOOL);
         $stmt->bindValue(":cartao_credito", $usuario->getCartaoCredito());
+        $stmt->bindValue(":is_admin", $usuario->isAdmin(), PDO::PARAM_BOOL);
 
         return $stmt->execute();
     }
@@ -52,7 +53,7 @@ class PostgresUsuarioDao extends PostgresDao implements UsuarioDao
         $query = "UPDATE " . $this->table_name .
             " SET nome = :nome, email = :email, senha = :senha, 
           telefone = :telefone, endereco_id = :endereco_id,
-          tipo = :tipo, cartao_credito = :cartao_credito" .
+          tipo = :tipo, cartao_credito = :cartao_credito, is_admin = :is_admin" .
             " WHERE id = :id";
 
         $stmt = $this->conn->prepare($query);
@@ -68,6 +69,7 @@ class PostgresUsuarioDao extends PostgresDao implements UsuarioDao
 
         $stmt->bindValue(":tipo", $usuario->getTipo());
         $stmt->bindValue(":cartao_credito", $usuario->getCartaoCredito());
+        $stmt->bindValue(":is_admin", $usuario->isAdmin(), PDO::PARAM_BOOL);
         $stmt->bindValue(':id', $usuario->getId());
 
         return $stmt->execute();
@@ -163,6 +165,7 @@ class PostgresUsuarioDao extends PostgresDao implements UsuarioDao
         );
         $usuario->setId($row['id']);
         $usuario->setTipo($row['tipo']);
+        $usuario->setIsAdmin($row['is_admin']);
         return $usuario;
     }
 
@@ -184,6 +187,20 @@ class PostgresUsuarioDao extends PostgresDao implements UsuarioDao
 
         if ($stmt->execute()) {
             $usuario->adicionarEndereco($endereco);
+            return true;
+        }
+        return false;
+    }
+
+    public function atualizarStatusAdmin($usuario, $isAdmin)
+    {
+        $query = "UPDATE " . $this->table_name . " SET is_admin = :is_admin WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindValue(':is_admin', $isAdmin, PDO::PARAM_BOOL);
+        $stmt->bindValue(':id', $usuario->getId());
+
+        if ($stmt->execute()) {
+            $usuario->setIsAdmin($isAdmin);
             return true;
         }
         return false;
