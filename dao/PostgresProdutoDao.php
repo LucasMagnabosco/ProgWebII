@@ -251,7 +251,7 @@ class PostgresProdutoDao implements ProdutoDao
                 $row['codigo']
             );
             $produtos[] = $produto->toJson();
-            as
+            
         }
 
         return json_encode($produtos, JSON_PRETTY_PRINT);
