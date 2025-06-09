@@ -21,9 +21,6 @@ if (!$usuario || !$usuario->isAdmin()) {
 
 $page_title = "Gerenciar Permissões de Administrador";
 
-// Busca todos os usuários
-$usuarios = $factory->getUsuarioDao()->buscaTodos();
-
 // Adiciona os scripts necessários
 echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">';
 echo '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
@@ -62,31 +59,13 @@ include_once '../layout_header.php';
                         </tr>
                     </thead>
                     <tbody id="listaUsuarios">
-                        <?php foreach ($usuarios as $usuario): ?>
-                            <tr>
-                                <td><?php echo htmlspecialchars($usuario->getId()); ?></td>
-                                <td><?php echo htmlspecialchars($usuario->getNome()); ?></td>
-                                <td><?php echo htmlspecialchars($usuario->getEmail()); ?></td>
-                                <td><?php echo $usuario->getTipo() ? 'Fornecedor' : 'Normal'; ?></td>
-                                <td>
-                                    <div class="form-check">
-                                        <input type="checkbox" 
-                                               class="form-check-input admin-checkbox" 
-                                               data-user-id="<?php echo $usuario->getId(); ?>"
-                                               <?php echo $usuario->isAdmin() ? 'checked' : ''; ?>>
-                                    </div>
-                                </td>
-                                <td>
-                                    <a href="excluir_usuario.php?id=<?php echo $usuario->getId(); ?>" 
-                                       class="btn btn-danger btn-sm"
-                                       onclick="return confirm('Tem certeza que deseja excluir este usuário?');">
-                                        <i class="fas fa-trash"></i> Excluir
-                                    </a>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
+                        <!-- Os dados serão carregados via AJAX -->
                     </tbody>
                 </table>
+            </div>
+
+            <div id="pagination" class="mt-3">
+                <!-- A paginação será carregada via AJAX -->
             </div>
 
             <div class="mt-3">
@@ -98,53 +77,116 @@ include_once '../layout_header.php';
 
 <script>
 $(document).ready(function() {
-    $('#pesquisa').on('keyup', function() {
-        var valor = $(this).val().toLowerCase();
-        $("#listaUsuarios tr").filter(function() {
-            $(this).toggle($(this).text().toLowerCase().indexOf(valor) > -1)
+    let currentPage = 1;
+    let termo = '';
+
+    function loadData(page = 1) {
+        $.ajax({
+            url: 'busca_usuarios_ajax.php',
+            method: 'POST',
+            data: {
+                page: page,
+                pesquisa: termo
+            },
+            success: function(data) {
+                let html = '';
+                
+                data.usuarios.forEach(function(usuario) {
+                    html += `
+                        <tr>
+                            <td>${usuario.id}</td>
+                            <td>${usuario.nome}</td>
+                            <td>${usuario.email}</td>
+                            <td>${usuario.tipo ? 'Fornecedor' : 'Normal'}</td>
+                            <td>
+                                <div class="form-check">
+                                    <input type="checkbox" 
+                                           class="form-check-input admin-checkbox" 
+                                           data-user-id="${usuario.id}"
+                                           ${usuario.is_admin ? 'checked' : ''}>
+                                </div>
+                            </td>
+                            <td>
+                                <a href="excluir_usuario.php?id=${usuario.id}" 
+                                   class="btn btn-danger btn-sm"
+                                   onclick="return confirm('Tem certeza que deseja excluir este usuário?');">
+                                    <i class="fas fa-trash"></i> Excluir
+                                </a>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                $('#listaUsuarios').html(html);
+                $('#pagination').html(data.pagination);
+                
+                // Reativa os event listeners dos checkboxes
+                attachCheckboxListeners();
+            }
         });
+    }
+
+    function attachCheckboxListeners() {
+        $('.admin-checkbox').on('change', function() {
+            const checkbox = $(this);
+            const userId = checkbox.data('user-id');
+            const isAdmin = checkbox.prop('checked');
+            const action = isAdmin ? 'tornar administrador' : 'remover permissões de administrador';
+            
+            if (confirm(`Tem certeza que deseja ${action} deste usuário?`)) {
+                $.ajax({
+                    url: 'atualizar_permissao.php',
+                    method: 'POST',
+                    data: {
+                        user_id: userId,
+                        is_admin: isAdmin
+                    },
+                    success: function(response) {
+                        const data = JSON.parse(response);
+                        $('#mensagem')
+                            .removeClass('alert-success alert-danger')
+                            .addClass(data.success ? 'alert-success' : 'alert-danger')
+                            .html(data.message)
+                            .show()
+                            .delay(3000)
+                            .fadeOut();
+                    },
+                    error: function() {
+                        $('#mensagem')
+                            .removeClass('alert-success alert-danger')
+                            .addClass('alert-danger')
+                            .html('Erro ao atualizar permissão')
+                            .show()
+                            .delay(3000)
+                            .fadeOut();
+                        checkbox.prop('checked', !isAdmin);
+                    }
+                });
+            } else {
+                checkbox.prop('checked', !isAdmin);
+            }
+        });
+    }
+
+    // listener para pesquisa
+    $('#pesquisa').on('keyup', function() {
+        termo = $(this).val();
+        currentPage = 1;
+        loadData(currentPage);
     });
 
-    // Função para atualizar permissão
-    $('.admin-checkbox').on('change', function() {
-        const checkbox = $(this);
-        const userId = checkbox.data('user-id');
-        const isAdmin = checkbox.prop('checked');
-        const action = isAdmin ? 'tornar administrador' : 'remover permissões de administrador';
-        
-        if (confirm(`Tem certeza que deseja ${action} deste usuário?`)) {
-            $.ajax({
-                url: 'atualizar_permissao.php',
-                method: 'POST',
-                data: {
-                    user_id: userId,
-                    is_admin: isAdmin
-                },
-                success: function(response) {
-                    const data = JSON.parse(response);
-                    $('#mensagem')
-                        .removeClass('alert-success alert-danger')
-                        .addClass(data.success ? 'alert-success' : 'alert-danger')
-                        .html(data.message)
-                        .show()
-                        .delay(3000)
-                        .fadeOut();
-                },
-                error: function() {
-                    $('#mensagem')
-                        .removeClass('alert-success alert-danger')
-                        .addClass('alert-danger')
-                        .html('Erro ao atualizar permissão')
-                        .show()
-                        .delay(3000)
-                        .fadeOut();
-                    checkbox.prop('checked', !isAdmin); // Reverte o checkbox em caso de erro
-                }
-            });
-        } else {
-            checkbox.prop('checked', !isAdmin);
+    // listener para paginação
+    $(document).on('click', '.page-link', function(e) {
+        e.preventDefault();
+        const page = $(this).data('page_number');
+        if (page) {
+            currentPage = page;
+            loadData(page);
         }
     });
+
+    // Carrega os dados iniciais
+    loadData();
 });
 </script>
 

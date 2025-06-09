@@ -148,7 +148,7 @@ $fornecedoresArr = array_map(function ($f) {
         $.ajax({
             type: 'POST',
             dataType: 'json',
-            url: 'produto/busca_ajax.php',
+            url: 'produto/busca_produto_ajax.php',
             data: { 
                 pesquisa: pesquisa, 
                 page: page

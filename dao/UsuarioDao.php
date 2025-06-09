@@ -11,5 +11,10 @@ interface UsuarioDao {
     public function buscaPorTipo($tipo);
     public function atualizarTipo($usuario, $novoTipo);
     public function atualizarStatusAdmin($usuario, $isAdmin);
+    public function buscaTodosPaginado($inicio, $quantos, $termo = '');
+    public function buscaTodosFormatados($inicio, $quantos, $termo = '');
+    public function buscaFiltrada($nome, $inicio, $quantos);
+    public function contaTodos();
+    public function contaComNome($nome);
 }
 ?>

@@ -140,15 +140,26 @@ class PostgresProdutoDao implements ProdutoDao
         return $produtos;
     }
 
-    public function buscaTodosPaginado($inicio,$quantos) {
+    public function buscaTodosPaginado($inicio, $quantos, $termo = '') {
         $query = "SELECT 
                     p.id, p.nome, p.descricao, p.foto, p.codigo,
                     p.preco, p.quantidade, p.fornecedor_id
-                    FROM produto p
-                    ORDER BY id ASC
+                    FROM produto p";
+        
+        if (!empty($termo)) {
+            $query .= " WHERE UPPER(p.codigo) LIKE :termo 
+                       OR UPPER(p.nome) LIKE :termo";
+        }
+        
+        $query .= " ORDER BY id ASC
                     LIMIT :limit OFFSET :offset";
      
         $stmt = $this->conn->prepare($query);
+        
+        if (!empty($termo)) {
+            $stmt->bindValue(':termo', '%' . strtoupper($termo) . '%');
+        }
+        
         $stmt->bindValue(':limit', $quantos, PDO::PARAM_INT);
         $stmt->bindValue(':offset', $inicio, PDO::PARAM_INT);
         $stmt->execute();
@@ -173,9 +184,9 @@ class PostgresProdutoDao implements ProdutoDao
         return $produtos;
     }
 
-    public function buscaTodosFormatados($inicio,$quantos)
+    public function buscaTodosFormatados($inicio, $quantos, $termo = '')
     {
-        $produtos = $this->buscaTodosPaginado($inicio,$quantos);
+        $produtos = $this->buscaTodosPaginado($inicio, $quantos, $termo);
         $produtosJSON = [];
         foreach ($produtos as $produto) {
             $produtosJSON[] = $produto->toJson();
@@ -221,43 +232,10 @@ class PostgresProdutoDao implements ProdutoDao
         return json_encode($produtosJSON, JSON_PRETTY_PRINT);
     }
 
-    public function buscaFiltrada($nome,$inicio,$quantos)
+    public function buscaFiltrada($nome, $inicio, $quantos)
     {
-        $produtos = array();
-
-        $sql = "SELECT * FROM produto 
-                WHERE codigo ILIKE :termo 
-                OR nome ILIKE :termo
-                ORDER BY id ASC
-                LIMIT :limit OFFSET :offset";
-
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bindValue(':termo', '%' . strtoupper($nome) . '%');
-        $stmt->bindValue(':limit', $quantos, PDO::PARAM_INT);
-        $stmt->bindValue(':offset', $inicio, PDO::PARAM_INT);
-        $stmt->execute();
-        
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        foreach ($rows as $row) {
-            $produto = new Produto(
-                $row['nome'],
-                $row['descricao'],
-                $row['fornecedor_id'],
-                $row['preco'],
-                $row['quantidade'],
-                $row['foto'],
-                $row['id'],
-                $row['codigo']
-            );
-            $produtos[] = $produto->toJson();
-            
-        }
-
-        return json_encode($produtos, JSON_PRETTY_PRINT);
+        return $this->buscaTodosFormatados($inicio, $quantos, $nome);
     }
-
-
 
     public function contaTodos() {
 

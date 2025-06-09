@@ -107,5 +107,31 @@ class Usuario {
         $this->is_admin = $is_admin;
         return $this;
     }
+
+    public function toJson() {
+        $enderecoJson = null;
+        if ($this->endereco !== null) {
+            $enderecoJson = [
+                'id' => $this->endereco->getId(),
+                'rua' => $this->endereco->getRua(),
+                'numero' => $this->endereco->getNumero(),
+                'bairro' => $this->endereco->getBairro(),
+                'cidade' => $this->endereco->getCidade(),
+                'estado' => $this->endereco->getEstado(),
+                'cep' => $this->endereco->getCep()
+            ];
+        }
+
+        return [
+            'id' => $this->id,
+            'nome' => $this->nome,
+            'email' => $this->email,
+            'telefone' => $this->telefone,
+            'tipo' => $this->tipo,
+            'cartao_credito' => $this->cartaoCredito,
+            'is_admin' => $this->is_admin,
+            'endereco' => $enderecoJson
+        ];
+    }
 }
 ?>

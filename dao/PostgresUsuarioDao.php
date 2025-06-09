@@ -206,5 +206,86 @@ class PostgresUsuarioDao extends PostgresDao implements UsuarioDao
         return false;
     }
 
+    public function buscaTodosPaginado($inicio, $quantos, $termo = '') {
+        $query = "SELECT * FROM " . $this->table_name;
+        
+        if (!empty($termo)) {
+            $query .= " WHERE UPPER(nome) LIKE :termo 
+                       OR UPPER(email) LIKE :termo";
+        }
+        
+        $query .= " ORDER BY id ASC
+                   LIMIT :limit OFFSET :offset";
+     
+        $stmt = $this->conn->prepare($query);
+        
+        if (!empty($termo)) {
+            $stmt->bindValue(':termo', '%' . strtoupper($termo) . '%');
+        }
+        
+        $stmt->bindValue(':limit', $quantos, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $inicio, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $usuarios = array();
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $usuarios[] = $this->criarUsuario($row);
+        }
+        return $usuarios;
+    }
+
+    public function buscaTodosFormatados($inicio, $quantos, $termo = '')
+    {
+        $usuarios = $this->buscaTodosPaginado($inicio, $quantos, $termo);
+        $usuariosJSON = [];
+        foreach ($usuarios as $usuario) {
+            $usuariosJSON[] = $usuario->toJson();
+        }
+        return json_encode($usuariosJSON, JSON_PRETTY_PRINT);
+    }
+
+    public function buscaFiltrada($nome, $inicio, $quantos)
+    {
+        $usuarios = $this->buscaTodosPaginado($inicio, $quantos, $nome);
+        $usuariosJSON = [];
+        foreach ($usuarios as $usuario) {
+            $usuariosJSON[] = $usuario->toJson();
+        }
+        return $usuariosJSON;
+    }
+
+    public function contaTodos() {
+        $quantos = 0;
+        $query = "SELECT COUNT(*) AS contagem FROM " . $this->table_name;
+     
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+
+        if ($row = $stmt->fetch(PDO::FETCH_ASSOC)){
+            extract($row);
+            $quantos = $contagem;
+        }
+        
+        return $quantos;
+    }
+
+    public function contaComNome($nome) {
+        $quantos = 0;
+        $query = "SELECT COUNT(*) AS contagem FROM " . $this->table_name . "
+                WHERE UPPER(nome) LIKE :termo 
+                OR UPPER(email) LIKE :termo";
+     
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindValue(':termo', '%' . strtoupper($nome) . '%');
+        $stmt->execute();
+
+        if ($row = $stmt->fetch(PDO::FETCH_ASSOC)){
+            extract($row);
+            $quantos = $contagem;
+        }
+        
+        return $quantos;
+    }
+
 }
 ?>
