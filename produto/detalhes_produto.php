@@ -88,7 +88,15 @@ include_once '../layout_header.php';
                     </div>
 
                     <div class="d-grid">
-                        <button class="btn btn-primary btn-lg">Adicionar ao Carrinho</button>
+                        <form action="../carrinho.php" method="POST">
+                            <input type="hidden" name="action" value="adicionar">
+                            <input type="hidden" name="produto_id" value="<?= $produto->getId() ?>">
+                            <input type="hidden" name="quantidade" value="1">
+                            <button type="submit" class="btn btn-primary btn-lg <?= $produto->getQuantidade() <= 0 ? 'opacity-50' : '' ?>" 
+                                    <?= $produto->getQuantidade() <= 0 ? 'disabled' : '' ?>>
+                                Adicionar ao Carrinho
+                            </button>
+                        </form>
                     </div>
                 <?php else: ?>
                     <div class="alert alert-danger">

@@ -110,9 +110,9 @@
     <script>
         $(document).ready(function() {
             $("#cadastroProdutoForm").submit(function(e) {
-                e.preventDefault(); // Previne o envio tradicional
+                e.preventDefault();
 
-                var formData = new FormData(this); // Pega todos os dados do formulário
+                var formData = new FormData(this);
 
                 $.ajax({
                     url: "insere_produto.php",

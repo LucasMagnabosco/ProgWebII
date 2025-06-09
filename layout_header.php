@@ -24,6 +24,20 @@
 		.nav-link:hover {
 			color: #0d6efd;
 		}
+		.cart-badge {
+			position: absolute;
+			top: -8px;
+			right: -8px;
+			padding: 0.25rem 0.5rem;
+			font-size: 0.75rem;
+			line-height: 1;
+			border-radius: 50%;
+			background-color: #dc3545;
+			color: white;
+		}
+		.cart-button {
+			position: relative;
+		}
 	</style>
 </head>
 <body class="bg-light">
@@ -37,6 +51,20 @@
 				if (is_session_started() === FALSE) {
 					session_start();
 				}
+
+				// Inicializa o carrinho se não existir
+				if (!isset($_SESSION['carrinho'])) {
+					$_SESSION['carrinho'] = [];
+				}
+
+				// Calcula o total de itens no carrinho
+				$totalItens = array_sum(array_column($_SESSION['carrinho'], 'quantidade'));
+				
+				// Botão do carrinho
+				echo '<a href="/ProgWebII/pedido/visualizar_carrinho.php" class="btn btn-outline-primary cart-button me-3">
+					<i class="fas fa-shopping-cart"></i>
+					' . ($totalItens > 0 ? '<span class="cart-badge">' . $totalItens . '</span>' : '') . '
+				</a>';
 				
 				if(isset($_SESSION["usuario_id"])) {
 					echo '<span class="me-3">Olá, ' . htmlspecialchars($_SESSION["usuario_nome"]) . '</span>';
