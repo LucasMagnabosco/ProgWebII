@@ -2,24 +2,35 @@
 
 include_once '../fachada.php';
 
-// procura usuários
-$palavra = $_POST['pesquisa'] ?? '';
-$fornecedor = $_POST['fornecedor'] ?? '';
+// Inicia a sessão se ainda não estiver iniciada
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-$dao = $factory->getProdutoDao();
+// Verifica se o usuário está logado e é fornecedor
+if (!isset($_SESSION["usuario_id"]) || !isset($_SESSION["is_fornecedor"]) || !$_SESSION["is_fornecedor"]) {
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'Não autorizado']);
+    exit();
+}
 
-$limit = '6';
 $page = isset($_POST['page']) ? (int)$_POST['page'] : 1;
+$pesquisa = isset($_POST['pesquisa']) ? trim($_POST['pesquisa']) : '';
+$fornecedor_id = isset($_POST['fornecedor_id']) ? (int)$_POST['fornecedor_id'] : 0;
+
+$limit = 5;
 if($page > 1) {
     $start = (($page - 1) * $limit);
 } else {
     $start = 0;
 }
 
+$produtoDao = $factory->getProdutoDao();
 
-$produtos = $dao->buscaFiltrada($palavra, $start, $limit);
-$total_data = $dao->contaComNome($palavra);
+$produtos = $produtoDao->buscaPorFornecedorFormatados($fornecedor_id, $start, $limit, $pesquisa);
+$total_data = $produtoDao->contaPorFornecedorENome($fornecedor_id, $pesquisa);
 
+error_log("Total de registros encontrados: $total_data");
 
 $response = array(
     'produtos' => $produtos,
@@ -117,9 +128,6 @@ $pagination .= '</ul></nav>';
 
 $response['pagination'] = $pagination;
 
-// Debug
-error_log("Resposta final: " . print_r($response, true));
-
 header('Content-Type: application/json');
 echo json_encode($response);
-?>
+?> 

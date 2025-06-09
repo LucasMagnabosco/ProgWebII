@@ -194,17 +194,83 @@ class PostgresProdutoDao implements ProdutoDao
         return json_encode($produtosJSON, JSON_PRETTY_PRINT);
     }
 
-    public function buscaPorFornecedor($fornecedorId)
+    public function buscaPorFornecedor($fornecedorId, $inicio = 0, $quantos = 5, $termo = '')
     {
         $sql = "SELECT 
                     p.id, p.nome, p.descricao, p.foto, p.codigo,
                     p.preco, p.quantidade, p.fornecedor_id
                 FROM produto p
                 WHERE p.fornecedor_id = :fornecedor_id";
+        
+        if (!empty($termo)) {
+            $sql .= " AND (UPPER(p.nome) LIKE :termo 
+                      OR UPPER(p.codigo) LIKE :termo 
+                      OR UPPER(p.descricao) LIKE :termo)";
+        }
+        
+        $sql .= " ORDER BY p.nome
+                LIMIT :limit OFFSET :offset";
+                
         $stmt = $this->conn->prepare($sql);
-        $stmt->execute([':fornecedor_id' => $fornecedorId]);
+        $stmt->bindValue(':fornecedor_id', $fornecedorId);
+        
+        if (!empty($termo)) {
+            $stmt->bindValue(':termo', '%' . strtoupper($termo) . '%');
+        }
+        
+        $stmt->bindValue(':limit', $quantos, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $inicio, PDO::PARAM_INT);
+        $stmt->execute();
+        
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        $produtos = array();
+        foreach ($rows as $row) {
+            $produto = new Produto(
+                $row['nome'],
+                $row['descricao'],
+                $row['fornecedor_id'],
+                $row['preco'],
+                $row['quantidade'],
+                $row['foto'],
+                $row['id'],
+                $row['codigo']
+            );
+            $produtos[] = $produto;
+        }
+
+        return $produtos;
+    }
+
+    public function buscaPorFornecedorFormatados($fornecedorId, $inicio = 0, $quantos = 5, $termo = '')
+    {
+        $produtos = $this->buscaPorFornecedor($fornecedorId, $inicio, $quantos, $termo);
+        $produtosJSON = [];
+        foreach ($produtos as $produto) {
+            $produtosJSON[] = $produto->toJson();
+        }
+        return json_encode($produtosJSON, JSON_PRETTY_PRINT);
+    }
+
+    public function buscaFiltrada($termo, $inicio, $quantos)
+    {
+        $query = "SELECT 
+                    p.id, p.nome, p.descricao, p.foto, p.codigo,
+                    p.preco, p.quantidade, p.fornecedor_id
+                FROM produto p
+                WHERE UPPER(p.codigo) LIKE :termo 
+                   OR UPPER(p.nome) LIKE :termo
+                   OR UPPER(p.descricao) LIKE :termo
+                ORDER BY id ASC
+                LIMIT :limit OFFSET :offset";
+     
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindValue(':termo', '%' . strtoupper($termo) . '%');
+        $stmt->bindValue(':limit', $quantos, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $inicio, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $produtos = array();
 
         foreach ($rows as $row) {
@@ -220,21 +286,12 @@ class PostgresProdutoDao implements ProdutoDao
             );
             $produtos[] = $produto;
         }
-        return $produtos;
-    }
-    public function buscaPorFornecedorFormatados($fornecedorId)
-    {
-        $produtos = $this->buscaPorFornecedor($fornecedorId);
+
         $produtosJSON = [];
         foreach ($produtos as $produto) {
             $produtosJSON[] = $produto->toJson();
         }
-        return json_encode($produtosJSON, JSON_PRETTY_PRINT);
-    }
-
-    public function buscaFiltrada($nome, $inicio, $quantos)
-    {
-        return $this->buscaTodosFormatados($inicio, $quantos, $nome);
+        return $produtosJSON;
     }
 
     public function contaTodos() {
@@ -265,6 +322,43 @@ class PostgresProdutoDao implements ProdutoDao
         $stmt->execute();
 
         if ($row = $stmt->fetch(PDO::FETCH_ASSOC)){
+            extract($row);
+            $quantos = $contagem;
+        }
+        
+        return $quantos;
+    }
+
+    public function contaPorFornecedor($fornecedor_id) {
+        $quantos = 0;
+        $query = "SELECT COUNT(*) AS contagem FROM produto WHERE fornecedor_id = :fornecedor_id";
+     
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindValue(':fornecedor_id', $fornecedor_id);
+        $stmt->execute();
+
+        if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            extract($row);
+            $quantos = $contagem;
+        }
+        
+        return $quantos;
+    }
+
+    public function contaPorFornecedorENome($fornecedor_id, $nome) {
+        $quantos = 0;
+        $query = "SELECT COUNT(*) AS contagem FROM produto 
+                 WHERE fornecedor_id = :fornecedor_id 
+                 AND (UPPER(nome) LIKE :nome 
+                      OR UPPER(codigo) LIKE :nome 
+                      OR UPPER(descricao) LIKE :nome)";
+     
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindValue(':fornecedor_id', $fornecedor_id);
+        $stmt->bindValue(':nome', '%' . strtoupper($nome) . '%');
+        $stmt->execute();
+
+        if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             extract($row);
             $quantos = $contagem;
         }

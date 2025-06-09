@@ -77,7 +77,7 @@ include_once '../layout_header.php';
 
 <script>
 $(document).ready(function() {
-    let currentPage = 1;
+    let atual = 1;
     let termo = '';
 
     function loadData(page = 1) {
@@ -171,8 +171,8 @@ $(document).ready(function() {
     // listener para pesquisa
     $('#pesquisa').on('keyup', function() {
         termo = $(this).val();
-        currentPage = 1;
-        loadData(currentPage);
+        atual = 1;
+        loadData(atual);
     });
 
     // listener para paginação
@@ -180,7 +180,7 @@ $(document).ready(function() {
         e.preventDefault();
         const page = $(this).data('page_number');
         if (page) {
-            currentPage = page;
+            atual = page;
             loadData(page);
         }
     });

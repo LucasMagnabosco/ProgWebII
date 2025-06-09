@@ -16,15 +16,10 @@ if($page > 1) {
     $start = 0;
 }
 
-// Debug
-error_log("Parâmetros de busca: palavra=$palavra, tipo=$tipo, start=$start, limit=$limit");
 
 $usuarios = $dao->buscaFiltrada($palavra, $start, $limit);
 $total_data = $dao->contaComNome($palavra);
 
-// Debug
-error_log("Usuários encontrados: " . print_r($usuarios, true));
-error_log("Total de registros: " . $total_data);
 
 $response = array(
     'usuarios' => $usuarios,
@@ -32,7 +27,7 @@ $response = array(
     'total' => $total_data
 );
 
-// Gera a paginação
+
 $total_links = ceil($total_data/$limit);
 $previous_link = '';
 $next_link = '';
@@ -122,8 +117,6 @@ $pagination .= '</ul></nav>';
 
 $response['pagination'] = $pagination;
 
-// Debug
-error_log("Resposta final: " . print_r($response, true));
 
 header('Content-Type: application/json');
 echo json_encode($response);
