@@ -38,13 +38,90 @@
 		.cart-button {
 			position: relative;
 		}
+		/* Estilos do menu lateral */
+		.drawer {
+			position: fixed;
+			top: 0;
+			left: -300px;
+			width: 300px;
+			height: 100vh;
+			background-color: #fff;
+			box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+			transition: left 0.3s ease-in-out;
+			z-index: 1050;
+			padding: 20px;
+		}
+		.drawer.open {
+			left: 0;
+		}
+		.drawer-overlay {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background-color: rgba(0,0,0,0.5);
+			display: none;
+			z-index: 1040;
+		}
+		.drawer-overlay.open {
+			display: block;
+		}
+		.drawer-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 20px;
+			padding-bottom: 10px;
+			border-bottom: 1px solid #dee2e6;
+		}
+		.drawer-content {
+			display: flex;
+			flex-direction: column;
+			gap: 10px;
+		}
+		.drawer-button {
+			width: 100%;
+			text-align: left;
+			padding: 10px;
+			border: none;
+			background: none;
+			color: #6c757d;
+			transition: all 0.2s;
+			position: relative;
+		}
+		.drawer-button:hover {
+			background-color: #f8f9fa;
+			color: #0d6efd;
+		}
+		.drawer-button i {
+			margin-right: 10px;
+			width: 20px;
+			text-align: center;
+		}
+		.drawer-button .cart-badge {
+			position: absolute;
+			right: 10px;
+			top: 50%;
+			transform: translateY(-50%);
+		}
+		.menu-toggle {
+			background: none;
+			border: none;
+			font-size: 1.5rem;
+			color: #6c757d;
+			cursor: pointer;
+			padding: 5px;
+		}
+		.menu-toggle:hover {
+			color: #0d6efd;
+		}
 	</style>
 </head>
 <body class="bg-light">
 	<nav class="navbar navbar-expand-lg navbar-light fixed-top">
 		<div class="container-fluid">
-			<a class="navbar-brand" href="/ProgWebII/visualiza_produtos.php"><?php echo $page_title; ?></a>
-			<div class="ms-auto d-flex align-items-center">
+			<div class="d-flex align-items-center">
 				<?php
 				include_once "comum.php";
 				
@@ -60,44 +137,96 @@
 				// Calcula o total de itens no carrinho
 				$totalItens = array_sum(array_column($_SESSION['carrinho'], 'quantidade'));
 				
-				// Botão do carrinho
-				echo '<a href="/ProgWebII/pedido/visualizar_carrinho.php" class="btn btn-outline-primary cart-button me-3">
-					<i class="fas fa-shopping-cart"></i>
-					' . ($totalItens > 0 ? '<span class="cart-badge">' . $totalItens . '</span>' : '') . '
+				// Botão do menu
+				echo '<button class="menu-toggle me-3" id="menuToggle">
+					<i class="fas fa-bars"></i>
+				</button>';
+				?>
+				<a class="navbar-brand" href="/ProgWebII/visualiza_produtos.php"><?php echo $page_title; ?></a>
+			</div>
+			<div class="ms-auto d-flex align-items-center">
+				<?php
+				// Botão home
+				echo '<a href="/ProgWebII/visualiza_produtos.php" class="btn btn-outline-primary">
+					<i class="fas fa-home"></i>
 				</a>';
-				
-				if(isset($_SESSION["usuario_id"])) {
-					echo '<span class="me-3">Olá, ' . htmlspecialchars($_SESSION["usuario_nome"]) . '</span>';
-					
-					// Verifica se o usuário é admin
-					$usuario = $factory->getUsuarioDao()->buscaPorId($_SESSION["usuario_id"]);
-					if($usuario && $usuario->isAdmin()) {
-						echo '<a href="/ProgWebII/usuario/permissoes.php" class="btn btn-info me-2">
-							<i class="fas fa-user-shield"></i> Gerenciar Permissões
-						</a>';
-					}
-					
-					if(isset($_SESSION["is_fornecedor"]) && $_SESSION["is_fornecedor"]) {
-						echo '<a href="/ProgWebII/produto/produtos.php" class="btn btn-warning me-2">
-							<i class="fas fa-boxes"></i> Gerenciar Estoque
-						</a>';
-					}
-					echo '<a href="/ProgWebII/login/executa_logout.php" class="btn btn-outline-danger me-2">Logout</a>';
-				} else {
-					echo '<a href="/ProgWebII/login/login.php" class="btn btn-outline-primary me-2">Login</a>';
-				}
-
-				// Verifica se não está na página de visualização de produtos
-				$current_page = basename($_SERVER['PHP_SELF']);
-				if ($current_page !== 'visualiza_produtos.php') {
-					echo '<a href="/ProgWebII/visualiza_produtos.php" class="btn btn-outline-primary">
-						<i class="fas fa-home"></i> Voltar aos Produtos
-					</a>';
-				}
 				?>
 			</div>
 		</div>
 	</nav>
+
+	<!-- Menu lateral -->
+	<div class="drawer" id="drawer">
+		<div class="drawer-header">
+			<h5 class="mb-0">Menu</h5>
+			<button class="menu-toggle" id="closeDrawer">
+				<i class="fas fa-times"></i>
+			</button>
+		</div>
+		<div class="drawer-content">
+			<?php
+			if(isset($_SESSION["usuario_id"])) {
+				echo '<span class="drawer-button">
+					<i class="fas fa-user"></i> Olá, ' . htmlspecialchars($_SESSION["usuario_nome"]) . '
+				</span>';
+				
+				// Botão Minhas Compras
+				echo '<a href="/ProgWebII/pedido/meus_pedidos.php" class="drawer-button">
+					<i class="fas fa-shopping-bag"></i> Minhas Compras
+				</a>';
+				
+				// Verifica se o usuário é admin
+				$usuario = $factory->getUsuarioDao()->buscaPorId($_SESSION["usuario_id"]);
+				if($usuario && $usuario->isAdmin()) {
+					echo '<a href="/ProgWebII/usuario/permissoes.php" class="drawer-button">
+						<i class="fas fa-user-shield"></i> Gerenciar Permissões
+					</a>';
+				}
+				
+				if(isset($_SESSION["is_fornecedor"]) && $_SESSION["is_fornecedor"]) {
+					echo '<a href="/ProgWebII/produto/produtos.php" class="drawer-button">
+						<i class="fas fa-boxes"></i> Gerenciar Estoque
+					</a>';
+				}
+			}
+
+			// Botão do carrinho
+			echo '<a href="/ProgWebII/pedido/visualizar_carrinho.php" class="drawer-button">
+				<i class="fas fa-shopping-cart"></i> Carrinho
+				' . ($totalItens > 0 ? '<span class="cart-badge">' . $totalItens . '</span>' : '') . '
+			</a>';
+
+			if(isset($_SESSION["usuario_id"])) {
+				echo '<a href="/ProgWebII/login/executa_logout.php" class="drawer-button">
+					<i class="fas fa-sign-out-alt"></i> Logout
+				</a>';
+			} else {
+				echo '<a href="/ProgWebII/login/login.php" class="drawer-button">
+					<i class="fas fa-sign-in-alt"></i> Login
+				</a>';
+			}
+			?>
+		</div>
+	</div>
+	<div class="drawer-overlay" id="drawerOverlay"></div>
+
+	<script>
+	document.addEventListener('DOMContentLoaded', function() {
+		const menuToggle = document.getElementById('menuToggle');
+		const closeDrawer = document.getElementById('closeDrawer');
+		const drawer = document.getElementById('drawer');
+		const overlay = document.getElementById('drawerOverlay');
+
+		function toggleDrawer() {
+			drawer.classList.toggle('open');
+			overlay.classList.toggle('open');
+		}
+
+		menuToggle.addEventListener('click', toggleDrawer);
+		closeDrawer.addEventListener('click', toggleDrawer);
+		overlay.addEventListener('click', toggleDrawer);
+	});
+	</script>
 </body>
 </html>
 

@@ -16,8 +16,119 @@ $page_title = "Carrinho de Compras";
 include_once '../layout_header.php';
 ?>
 
+<style>
+    @media (max-width: 768px) {
+        .container {
+            padding: 0 1rem;
+        }
+        .table-responsive {
+            margin: 0;
+            border: none;
+        }
+        .table {
+            margin-bottom: 1rem;
+        }
+        .table thead {
+            display: none;
+        }
+        .table tbody tr {
+            display: block;
+            margin-bottom: 1.5rem;
+            padding: 1.25rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .table tbody td {
+            display: block;
+            padding: 0.75rem 0;
+            border: none;
+            text-align: left;
+        }
+        .table tbody td:not(:last-child) {
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .table tbody td::before {
+            content: attr(data-label);
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #444;
+            font-size: 0.9rem;
+        }
+        .update-quantity-form {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+        }
+        .quantity-input {
+            width: 70px !important;
+            text-align: center;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        .btn-group-mobile {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding: 0 0.5rem;
+        }
+        .btn-group-mobile .btn {
+            width: 100%;
+            padding: 0.875rem;
+            font-size: 1rem;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+        .table tfoot {
+            display: block;
+            margin-top: 1.5rem;
+            padding: 0 0.5rem;
+        }
+        .table tfoot tr {
+            display: block;
+        }
+        .table tfoot td {
+            display: block;
+            padding: 0.75rem 0;
+        }
+        .cart-total {
+            font-size: 1.25rem;
+            padding: 1.25rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            text-align: right;
+            border: 1px solid #e0e0e0;
+        }
+        .btn-danger {
+            margin-top: 0.75rem;
+            padding: 0.75rem;
+            font-size: 0.9rem;
+            border-radius: 6px;
+        }
+        .btn-outline-primary {
+            border-width: 2px;
+        }
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+        .btn-warning {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: #000;
+        }
+    }
+</style>
+
 <div class="container mt-5">
-    <h2>Carrinho de Compras</h2>
+    <h2>Carrinho</h2>
     
     <?php if (isset($_GET['msg'])): ?>
         <div class="alert alert-<?= $_GET['tipo'] ?? 'info' ?> alert-dismissible fade show" role="alert">
@@ -50,9 +161,9 @@ include_once '../layout_header.php';
                         $total += $subtotal;
                     ?>
                         <tr>
-                            <td><?= htmlspecialchars($item['nome']) ?></td>
-                            <td>R$ <?= number_format($item['preco'], 2, ',', '.') ?></td>
-                            <td>
+                            <td data-label="Produto"><?= htmlspecialchars($item['nome']) ?></td>
+                            <td data-label="Preço">R$ <?= number_format($item['preco'], 2, ',', '.') ?></td>
+                            <td data-label="Quantidade">
                                 <form action="carrinho.php" method="POST" class="d-flex align-items-center update-quantity-form">
                                     <input type="hidden" name="action" value="atualizar">
                                     <input type="hidden" name="produto_id" value="<?= $item['id'] ?>">
@@ -64,8 +175,8 @@ include_once '../layout_header.php';
                                     </button>
                                 </form>
                             </td>
-                            <td class="subtotal">R$ <?= number_format($subtotal, 2, ',', '.') ?></td>
-                            <td>
+                            <td data-label="Subtotal" class="subtotal">R$ <?= number_format($subtotal, 2, ',', '.') ?></td>
+                            <td data-label="Ações">
                                 <form action="carrinho.php" method="POST" class="d-inline">
                                     <input type="hidden" name="action" value="remover">
                                     <input type="hidden" name="produto_id" value="<?= $item['id'] ?>">
@@ -79,8 +190,8 @@ include_once '../layout_header.php';
                 </tbody>
                 <tfoot>
                     <tr>
-                        <td colspan="3" class="text-end"><strong>Total:</strong></td>
-                        <td><strong id="cart-total">R$ <?= number_format($total, 2, ',', '.') ?></strong></td>
+                        <td colspan="3" class="text-start"><strong>Total:</strong></td>
+                        <td><strong id="cart-total" class="cart-total">R$ <?= number_format($total, 2, ',', '.') ?></strong></td>
                         <td>
                             <form action="carrinho.php" method="POST" class="d-inline">
                                 <input type="hidden" name="action" value="limpar">
@@ -95,19 +206,9 @@ include_once '../layout_header.php';
             </table>
         </div>
         
-        <div class="d-flex justify-content-between mt-4">
-            <a href="../visualiza_produtos.php" class="btn btn-outline-primary">
-                <i class="fas fa-arrow-left"></i> Continuar Comprando
-            </a>
-            <?php if (isset($_SESSION['usuario_id'])): ?>
-                <a href="checkout.php" class="btn btn-success">
-                    <i class="fas fa-shopping-cart"></i> Finalizar Compra
-                </a>
-            <?php else: ?>
-                <a href="../login/login.php" class="btn btn-warning">
-                    <i class="fas fa-sign-in-alt"></i> Faça login para finalizar a compra
-                </a>
-            <?php endif; ?>
+        <div class="d-flex justify-content-between align-items-center">
+            <a href="../visualiza_produtos.php" class="btn btn-secondary">Continuar Comprando</a>
+            <a href="selecionar_endereco.php" class="btn btn-primary">Finalizar Compra</a>
         </div>
     <?php endif; ?>
 </div>
@@ -133,6 +234,7 @@ document.addEventListener('DOMContentLoaded', function() {
         input.addEventListener('change', function() {
             const form = this.closest('form');
             const formData = new FormData(form);
+            const originalValue = this.value;
             
             fetch('carrinho.php', {
                 method: 'POST',
@@ -155,13 +257,25 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Atualiza o total do carrinho
                     atualizarTotal();
                 } else {
+                    // Restaura o valor original e mostra mensagem de erro
+                    this.value = originalValue;
                     alert(data.msg || 'Erro ao atualizar quantidade');
                 }
             })
             .catch(error => {
                 console.error('Erro:', error);
+                this.value = originalValue;
                 alert('Erro ao atualizar quantidade');
             });
+        });
+    });
+
+
+    document.querySelectorAll('.update-quantity-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const input = this.querySelector('.quantity-input');
+            input.dispatchEvent(new Event('change'));
         });
     });
 });

@@ -1,4 +1,6 @@
 <?php
+session_start();
+include_once '../model/Produto.php';
 include_once '../fachada.php';
 include_once '../comum.php';
 
@@ -21,8 +23,6 @@ function calcularTotal() {
     return $total;
 }
 
-
-
 // Função para enviar resposta JSON
 $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
 function jsonResponse($success, $msg = '', $data = []) {
@@ -38,14 +38,13 @@ function jsonResponse($success, $msg = '', $data = []) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
     $produto_id = $_POST['produto_id'] ?? 0;
-    
+    $quantidade = $_POST['quantidade'] ?? 0;
+
     switch ($action) {
         case 'adicionar':
-            $quantidade = $_POST['quantidade'] ?? 1;
-            
             $produtoDao = $factory->getProdutoDao();
             $produto = $produtoDao->buscaPorId($produto_id);
-            
+
             if ($produto && $produto->getQuantidade() >= $quantidade) {
                 // Verifica se o produto já está no carrinho
                 if (isset($_SESSION['carrinho'][$produto_id])) {
@@ -83,35 +82,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
             break;
-            
+
         case 'atualizar':
-            $quantidade = $_POST['quantidade'] ?? 1;
-            
             if (isset($_SESSION['carrinho'][$produto_id])) {
                 // Busca o produto para verificar o estoque
                 $produtoDao = $factory->getProdutoDao();
                 $produto = $produtoDao->buscaPorId($produto_id);
-                
+
                 if ($produto && $quantidade <= $produto->getQuantidade()) {
                     $_SESSION['carrinho'][$produto_id]['quantidade'] = $quantidade;
+                    
                     if ($isAjax) {
-                        jsonResponse(true, 'Quantidade atualizada');
-                    } else {
-                        header("Location: visualizar_carrinho.php");
+                        header('Content-Type: application/json');
+                        echo json_encode(['success' => true]);
+                        exit;
                     }
+                    
+                    header('Location: visualizar_carrinho.php?msg=Quantidade atualizada com sucesso&tipo=success');
                 } else {
                     if ($isAjax) {
-                        jsonResponse(false, 'Quantidade indisponível em estoque');
-                    } else {
-                        header("Location: visualizar_carrinho.php?msg=Quantidade indisponível em estoque&tipo=danger");
+                        header('Content-Type: application/json');
+                        echo json_encode([
+                            'success' => false,
+                            'msg' => 'Quantidade indisponível em estoque'
+                        ]);
+                        exit;
                     }
+                    
+                    header('Location: visualizar_carrinho.php?msg=Quantidade indisponível em estoque&tipo=danger');
                 }
             }
-            if (!$isAjax) {
-                header("Location: visualizar_carrinho.php");
-            }
             break;
-            
+
         case 'remover':
             if (isset($_SESSION['carrinho'][$produto_id])) {
                 unset($_SESSION['carrinho'][$produto_id]);
@@ -120,16 +122,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header("Location: visualizar_carrinho.php");
             }
             break;
-            
-        case 'limpar':
-            $_SESSION['carrinho'] = [];
-            if (!$isAjax) {
-                header("Location: visualizar_carrinho.php");
-            }
-            break;
     }
     if ($isAjax) {
         jsonResponse(true);
     }
-    exit();
-} 
+}
+?> 

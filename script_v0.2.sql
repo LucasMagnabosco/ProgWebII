@@ -17,7 +17,7 @@ CREATE TABLE itens_pedido (
     FOREIGN KEY (produto_id) REFERENCES produto(id)
 );
 
--- Índices para melhor performance
+-- Índices
 CREATE INDEX idx_pedido_usuario ON pedido(usuario_id);
 CREATE INDEX idx_pedido_status ON pedido(status);
 CREATE INDEX idx_itens_pedido_pedido ON itens_pedido(pedido_id);

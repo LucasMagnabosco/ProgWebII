@@ -1,16 +1,26 @@
 <?php
 class Pedido {
     private $id;
-    private $clienteId;
+    private $usuarioId;
+    private $enderecoId;
     private $dataPedido;
     private $status;
     private $total;
     
-    public function __construct($id = null, $clienteId = null, $dataPedido = null, $status = null, $total = 0) {
+    // Constantes para os status do pedido
+    const STATUS_PENDENTE = 'PENDENTE';
+    const STATUS_APROVADO = 'APROVADO';
+    const STATUS_EM_PREPARACAO = 'EM_PREPARACAO';
+    const STATUS_ENVIADO = 'ENVIADO';
+    const STATUS_ENTREGUE = 'ENTREGUE';
+    const STATUS_CANCELADO = 'CANCELADO';
+    
+    public function __construct($id = null, $usuarioId = null, $enderecoId = null, $dataPedido = null, $status = null, $total = null) {
         $this->id = $id;
-        $this->clienteId = $clienteId;
-        $this->dataPedido = $dataPedido ?: date('Y-m-d H:i:s');
-        $this->status = $status ?: 'PENDENTE';
+        $this->usuarioId = $usuarioId;
+        $this->enderecoId = $enderecoId;
+        $this->dataPedido = $dataPedido;
+        $this->status = $status ?? self::STATUS_PENDENTE;
         $this->total = $total;
     }
     
@@ -18,36 +28,44 @@ class Pedido {
         return $this->id;
     }
     
-    public function setId($id) {
-        $this->id = $id;
+    public function getUsuarioId() {
+        return $this->usuarioId;
     }
     
-    public function getClienteId() {
-        return $this->clienteId;
-    }
-    
-    public function setClienteId($clienteId) {
-        $this->clienteId = $clienteId;
+    public function getEnderecoId() {
+        return $this->enderecoId;
     }
     
     public function getDataPedido() {
         return $this->dataPedido;
     }
     
-    public function setDataPedido($dataPedido) {
-        $this->dataPedido = $dataPedido;
-    }
-    
     public function getStatus() {
         return $this->status;
     }
     
-    public function setStatus($status) {
-        $this->status = $status;
-    }
-    
     public function getTotal() {
         return $this->total;
+    }
+    
+    public function setId($id) {
+        $this->id = $id;
+    }
+    
+    public function setUsuarioId($usuarioId) {
+        $this->usuarioId = $usuarioId;
+    }
+    
+    public function setEnderecoId($enderecoId) {
+        $this->enderecoId = $enderecoId;
+    }
+    
+    public function setDataPedido($dataPedido) {
+        $this->dataPedido = $dataPedido;
+    }
+    
+    public function setStatus($status) {
+        $this->status = $status;
     }
     
     public function setTotal($total) {
@@ -57,7 +75,8 @@ class Pedido {
     public function toJson() {
         return [
             'id' => $this->id,
-            'clienteId' => $this->clienteId,
+            'usuarioId' => $this->usuarioId,
+            'enderecoId' => $this->enderecoId,
             'dataPedido' => $this->dataPedido,
             'status' => $this->status,
             'total' => $this->total

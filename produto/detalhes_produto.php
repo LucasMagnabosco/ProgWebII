@@ -102,6 +102,13 @@ include_once '../layout_header.php';
                                 Adicionar ao Carrinho
                             </button>
                         </form>
+                        <?php if (isset($_GET['adicionado'])): ?>
+                        <div class="mt-3">
+                            <a href="../pedido/visualizar_carrinho.php" class="btn btn-success">
+                                <i class="fas fa-shopping-cart"></i> Ir ao Carrinho
+                            </a>
+                        </div>
+                        <?php endif; ?>
                     </div>
                 <?php else: ?>
                     <div class="alert alert-danger">
@@ -112,6 +119,22 @@ include_once '../layout_header.php';
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <?php if (isset($_SESSION['sucesso'])): ?>
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+        <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto">Sucesso!</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                <?= $_SESSION['sucesso'] ?>
+                <div class="mt-2 pt-2 border-top">
+                    <a href="../pedido/visualizar_carrinho.php" class="btn btn-primary btn-sm">Ir ao Carrinho</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php unset($_SESSION['sucesso']); endif; ?>
+
 </body>
 </html>
