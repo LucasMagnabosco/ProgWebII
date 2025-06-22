@@ -268,7 +268,6 @@ function formatarStatus($status) {
 const usuarioId = <?php echo json_encode($_SESSION['usuario_id']); ?>;
 const isAdmin = <?php echo json_encode($isAdmin); ?>;
 const isFornecedor = <?php echo json_encode($isFornecedor); ?>;
-const fornecedorId = <?php echo json_encode($fornecedorIdJs); ?>;
 const ITENS_API = '../api/pedidosREST.php';
 const ITENS_DETALHE_API = '../api/pedidosREST.php';
 const ITENS_POR_PAGINA = 4;
@@ -280,9 +279,7 @@ function carregarPedidos(pagina = 1) {
     document.getElementById('erro-pedidos').style.display = 'none';
     const termo = document.getElementById('busca-termo').value;
     let url = `${ITENS_API}?pagina=${pagina}&limite=${ITENS_POR_PAGINA}&termo=${encodeURIComponent(termo)}`;
-    if (isFornecedor && fornecedorId) {
-        url += `&fornecedor=${fornecedorId}`;
-    } else if (!isAdmin && !isFornecedor) {
+    if (!isAdmin && !isFornecedor) {
         url += `&cliente=${usuarioId}`;
     }
     fetch(url)

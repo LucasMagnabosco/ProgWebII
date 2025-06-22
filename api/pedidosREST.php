@@ -68,7 +68,14 @@ switch ($method) {
                 if ($isFornecedor) {
                     $fornecedorDao = $factory->getFornecedorDao();
                     $fornecedorSessao = $fornecedorDao->buscaPorUsuarioId($_SESSION['usuario_id']);
-                    $fornecedorSessaoId = $fornecedorSessao ? ($fornecedorSessao->getFornecedorId() ?: $fornecedorSessao->getId()) : null;
+                    $fornecedorSessaoId = null;
+                    if (is_object($fornecedorSessao)) {
+                        if (method_exists($fornecedorSessao, 'getFornecedorId') && $fornecedorSessao->getFornecedorId()) {
+                            $fornecedorSessaoId = $fornecedorSessao->getFornecedorId();
+                        } elseif (method_exists($fornecedorSessao, 'getId')) {
+                            $fornecedorSessaoId = $fornecedorSessao->getId();
+                        }
+                    }
                     if ($fornecedorIdParam != $fornecedorSessaoId) {
                         http_response_code(403);
                         echo json_encode(['erro' => 'Acesso negado.']);
