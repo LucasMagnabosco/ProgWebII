@@ -87,6 +87,40 @@ include_once '../layout_header.php';
                         </table>
                     </div>
 
+                    <div class="table-responsive">
+                        <?php 
+                        $subpedidos = $pedidoDao->buscarSubpedidos($pedido->getId());
+                        $fornecedorDao = $factory->getFornecedorDao();
+                        $isFornecedor = isset($_SESSION['is_fornecedor']) && $_SESSION['is_fornecedor'];
+                        foreach ($subpedidos as $sub) {
+                            if ($isFornecedor && $sub['fornecedor_id'] != $fornecedor->getFornecedorId()) continue;
+                            $fornecedor = $fornecedorDao->buscaPorId($sub['fornecedor_id']);
+                            echo '<div class="mb-3 p-2 border rounded">';
+                            echo '<strong>Fornecedor:</strong> ' . htmlspecialchars($fornecedor ? $fornecedor->getNome() : $sub['fornecedor_id']) . ' | ';
+                            echo '<strong>Status:</strong> ' . htmlspecialchars($sub['status']) . ' | ';
+                            echo '<strong>Total:</strong> R$ ' . number_format($sub['total'], 2, ',', '.') . '<br>';
+                            $stmt = $factory->getConnection()->prepare("SELECT ip.*, p.nome as produto_nome FROM itens_pedido ip JOIN produto p ON ip.produto_id = p.id WHERE ip.pedido_fornecedor_id = :subpedido_id");
+                            $stmt->bindValue(':subpedido_id', $sub['id']);
+                            $stmt->execute();
+                            $itens = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                            echo '<table class="table table-sm mt-2"><thead><tr><th>Produto</th><th>Quantidade</th><th>Preço Unitário</th><th>Subtotal</th></tr></thead><tbody>';
+                            if ($itens) {
+                                foreach ($itens as $item) {
+                                    echo '<tr>';
+                                    echo '<td>' . htmlspecialchars($item['produto_nome']) . '</td>';
+                                    echo '<td>' . $item['quantidade'] . '</td>';
+                                    echo '<td>R$ ' . number_format($item['preco_unitario'], 2, ',', '.') . '</td>';
+                                    echo '<td>R$ ' . number_format($item['quantidade'] * $item['preco_unitario'], 2, ',', '.') . '</td>';
+                                    echo '</tr>';
+                                }
+                            } else {
+                                echo '<tr><td colspan="4">Nenhum item encontrado para este subpedido.</td></tr>';
+                            }
+                            echo '</tbody></table></div>';
+                        }
+                        ?>
+                    </div>
+
                     <div class="text-center mt-4">
                         <a href="../visualiza_produtos.php" class="btn btn-primary">
                             <i class="fas fa-shopping-bag"></i> Continuar Comprando

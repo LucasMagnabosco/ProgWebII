@@ -40,13 +40,12 @@ if (!isset($_POST['endereco_id']) || empty($_POST['endereco_id'])) {
 }
 
 try {
-    // Obtém a conexão
+
     $conexao = $factory->getConnection();
-    
-    // Inicia a transação
+
     $conexao->beginTransaction();
     
-    // Cria o pedido
+
     $pedido = new Pedido();
     $pedido->setUsuarioId($_SESSION['usuario_id']);
     $pedido->setEnderecoId($_POST['endereco_id']);
@@ -54,47 +53,64 @@ try {
     $pedido->setStatus('PENDENTE');
     $pedido->setTotal(0);
     
-    // Salva o pedido
+
     $pedidoDao = $factory->getPedidoDao();
+    $produtoDao = $factory->getProdutoDao();
     $pedidoId = $pedidoDao->salvar($pedido);
     $pedido->setId($pedidoId);
-    
-    // Adiciona os itens do pedido
-    $total = 0;
+
+    // 1. Separa itens do carrinho por fornecedor
+    $itensPorFornecedor = [];
     foreach ($_SESSION['carrinho'] as $produtoId => $item) {
-        // Busca o produto
-        $produtoDao = $factory->getProdutoDao();
         $produto = $produtoDao->buscaPorId($produtoId);
-        
         if (!$produto) {
             throw new Exception("Produto não encontrado");
         }
-        
-        $quantidade = $item['quantidade'];
-        
-        // Verifica o estoque
-        if ($produto->getQuantidade() < $quantidade) {
-            throw new Exception("Estoque insuficiente para o produto: " . $produto->getNome());
+        $fornecedorId = $produto->getFornecedorId();
+        if (!isset($itensPorFornecedor[$fornecedorId])) {
+            $itensPorFornecedor[$fornecedorId] = [];
         }
-        
-        // Adiciona o item ao pedido
-        $pedidoDao->adicionarItemPedido($pedido->getId(), $produtoId, $quantidade, $produto->getPreco());
-        
-        // Atualiza o estoque
-        $produto->setQuantidade($produto->getQuantidade() - $quantidade);
-        $produtoDao->atualiza($produto);
-        
-        // Atualiza o total
-        $total += $quantidade * $produto->getPreco();
+        $itensPorFornecedor[$fornecedorId][] = [
+            'produto' => $produto,
+            'quantidade' => $item['quantidade'],
+            'preco' => $produto->getPreco()
+        ];
     }
-    
-    // Atualiza o total do pedido
-    $pedido->setTotal($total);
+
+    // 2. Cria subpedidos e insere itens
+    $totalPedido = 0;
+    foreach ($itensPorFornecedor as $fornecedorId => $itens) {
+        // Cria subpedido
+        $subpedidoId = $pedidoDao->criarSubpedido($pedidoId, $fornecedorId, 'PENDENTE', 0);
+        $totalSubpedido = 0;
+        foreach ($itens as $item) {
+            $produto = $item['produto'];
+            $quantidade = $item['quantidade'];
+            $preco = $item['preco'];
+            // Verifica estoque
+            if ($produto->getQuantidade() < $quantidade) {
+                throw new Exception("Estoque insuficiente para o produto: " . $produto->getNome());
+            }
+            // Insere item
+            $pedidoDao->adicionarItemPedido($pedidoId, $produto->getId(), $quantidade, $preco, $subpedidoId);
+            // Atualiza estoque
+            $produto->setQuantidade($produto->getQuantidade() - $quantidade);
+            $produtoDao->atualiza($produto);
+            $totalSubpedido += $quantidade * $preco;
+        }
+        // Atualiza total do subpedido
+        $conexao->prepare("UPDATE pedido_fornecedor SET total = :total WHERE id = :id")
+            ->execute([':total' => $totalSubpedido, ':id' => $subpedidoId]);
+        $totalPedido += $totalSubpedido;
+    }
+
+    // Atualiza o total do pedido principal
+    $pedido->setTotal($totalPedido);
     $pedidoDao->atualizar($pedido);
-    
+
     // Limpa o carrinho
     unset($_SESSION['carrinho']);
-    
+
     // Confirma a transação
     $conexao->commit();
     

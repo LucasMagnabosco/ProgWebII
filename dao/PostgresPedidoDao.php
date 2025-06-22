@@ -186,33 +186,45 @@ class PostgresPedidoDao implements PedidoDao {
         }
     }
     
-    public function buscarItensPedido($pedidoId) {
+    public function buscarItensPedido($pedidoId, $fornecedorId = null) {
         try {
-            $sql = "SELECT ip.*, p.nome as produto_nome, p.foto as produto_imagem 
+            $sql = "SELECT ip.*, p.nome as produto_nome, p.foto as produto_imagem, p.fornecedor_id 
                     FROM itens_pedido ip 
                     JOIN produto p ON ip.produto_id = p.id 
                     WHERE ip.pedido_id = :pedido_id";
+            if ($fornecedorId) {
+                $sql .= " AND p.fornecedor_id = :fornecedor_id";
+            }
             $stmt = $this->conexao->prepare($sql);
             $stmt->bindValue(':pedido_id', $pedidoId);
+            if ($fornecedorId) {
+                $stmt->bindValue(':fornecedor_id', $fornecedorId);
+            }
             $stmt->execute();
-            
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             throw new Exception("Erro ao buscar itens do pedido: " . $e->getMessage());
         }
     }
     
-    public function adicionarItemPedido($pedidoId, $produtoId, $quantidade, $precoUnitario) {
+    public function adicionarItemPedido($pedidoId, $produtoId, $quantidade, $precoUnitario, $pedidoFornecedorId = null) {
         try {
-            $sql = "INSERT INTO itens_pedido (pedido_id, produto_id, quantidade, preco_unitario) 
-                    VALUES (:pedido_id, :produto_id, :quantidade, :preco_unitario)";
-            
+            if ($pedidoFornecedorId === null) {
+                // Compatibilidade retroativa
+                $sql = "INSERT INTO itens_pedido (pedido_id, produto_id, quantidade, preco_unitario) 
+                        VALUES (:pedido_id, :produto_id, :quantidade, :preco_unitario)";
+            } else {
+                $sql = "INSERT INTO itens_pedido (pedido_id, produto_id, quantidade, preco_unitario, pedido_fornecedor_id) 
+                        VALUES (:pedido_id, :produto_id, :quantidade, :preco_unitario, :pedido_fornecedor_id)";
+            }
             $stmt = $this->conexao->prepare($sql);
             $stmt->bindValue(':pedido_id', $pedidoId);
             $stmt->bindValue(':produto_id', $produtoId);
             $stmt->bindValue(':quantidade', $quantidade);
             $stmt->bindValue(':preco_unitario', $precoUnitario);
-            
+            if ($pedidoFornecedorId !== null) {
+                $stmt->bindValue(':pedido_fornecedor_id', $pedidoFornecedorId);
+            }
             return $stmt->execute();
         } catch (PDOException $e) {
             throw new Exception("Erro ao adicionar item ao pedido: " . $e->getMessage());
@@ -249,6 +261,234 @@ class PostgresPedidoDao implements PedidoDao {
         } catch (PDOException $e) {
             throw new Exception("Erro ao atualizar quantidade do item: " . $e->getMessage());
         }
+    }
+    
+    public function buscarPorCodigoOuNome($termo, $inicio = 0, $quantos = 10, $fornecedorId = null) {
+        if ($fornecedorId) {
+            $sql = "SELECT DISTINCT p.* FROM pedido p 
+                    JOIN itens_pedido ip ON ip.pedido_id = p.id
+                    JOIN produto pr ON ip.produto_id = pr.id
+                    JOIN usuario u ON p.usuario_id = u.id
+                    WHERE pr.fornecedor_id = :fornecedor_id";
+            $params = [':fornecedor_id' => $fornecedorId];
+            if (!empty($termo)) {
+                $sql .= " AND (UPPER(u.nome) LIKE :termo OR CAST(p.id AS TEXT) LIKE :termo)";
+                $params[':termo'] = '%' . strtoupper($termo) . '%';
+            }
+            $sql .= " ORDER BY p.data_pedido DESC LIMIT :limit OFFSET :offset";
+            $stmt = $this->conexao->prepare($sql);
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key, $value);
+            }
+            $stmt->bindValue(':limit', (int)$quantos, PDO::PARAM_INT);
+            $stmt->bindValue(':offset', (int)$inicio, PDO::PARAM_INT);
+            $stmt->execute();
+            $pedidos = [];
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $pedidos[] = new Pedido(
+                    $row['id'],
+                    $row['usuario_id'],
+                    $row['endereco_id'],
+                    $row['data_pedido'],
+                    $row['status'],
+                    $row['total']
+                );
+            }
+            return $pedidos;
+        } else {
+            $sql = "SELECT p.* FROM pedido p JOIN usuario u ON p.usuario_id = u.id WHERE 1=1";
+            $params = [];
+            if (!empty($termo)) {
+                $sql .= " AND (UPPER(u.nome) LIKE :termo OR CAST(p.id AS TEXT) LIKE :termo)";
+                $params[':termo'] = '%' . strtoupper($termo) . '%';
+            }
+            $sql .= " ORDER BY p.data_pedido DESC LIMIT :limit OFFSET :offset";
+            $stmt = $this->conexao->prepare($sql);
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key, $value);
+            }
+            $stmt->bindValue(':limit', (int)$quantos, PDO::PARAM_INT);
+            $stmt->bindValue(':offset', (int)$inicio, PDO::PARAM_INT);
+            $stmt->execute();
+            $pedidos = [];
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $pedidos[] = new Pedido(
+                    $row['id'],
+                    $row['usuario_id'],
+                    $row['endereco_id'],
+                    $row['data_pedido'],
+                    $row['status'],
+                    $row['total']
+                );
+            }
+            return $pedidos;
+        }
+    }
+    
+    public function buscaTodosFormatados($inicio, $quantos, $termo = '', $fornecedorId = null) {
+        $pedidos = $this->buscarPorCodigoOuNome($termo, $inicio, $quantos, $fornecedorId);
+        $pedidosJSON = [];
+        foreach ($pedidos as $pedido) {
+            $pedidoArr = $pedido->toJson();
+            // Buscar subpedidos
+            $subpedidos = $this->buscarSubpedidos($pedido->getId());
+            $pedidoArr['subpedidos'] = [];
+            foreach ($subpedidos as $sub) {
+                if ($fornecedorId && $sub['fornecedor_id'] != $fornecedorId) continue;
+                // Buscar nome do fornecedor
+                $fornecedorObj = $GLOBALS['factory']->getFornecedorDao()->buscaPorId($sub['fornecedor_id']);
+                $fornecedorNome = $fornecedorObj ? $fornecedorObj->getNome() : $sub['fornecedor_id'];
+                // Buscar itens do subpedido
+                $stmt = $this->conexao->prepare("SELECT ip.*, p.nome as produto_nome, p.foto as produto_imagem FROM itens_pedido ip JOIN produto p ON ip.produto_id = p.id WHERE ip.pedido_fornecedor_id = :subpedido_id");
+                $stmt->bindValue(':subpedido_id', $sub['id']);
+                $stmt->execute();
+                $itens = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                $pedidoArr['subpedidos'][] = [
+                    'id' => $sub['id'],
+                    'fornecedor_id' => $sub['fornecedor_id'],
+                    'fornecedor_nome' => $fornecedorNome,
+                    'status' => $sub['status'],
+                    'total' => $sub['total'],
+                    'itens' => $itens
+                ];
+                if ($fornecedorId) break;
+            }
+            // NOVO: só inclui o pedido se houver subpedidos para o fornecedor
+            if ($fornecedorId && count($pedidoArr['subpedidos']) === 0) continue;
+            $pedidosJSON[] = $pedidoArr;
+        }
+        return json_encode($pedidosJSON, JSON_PRETTY_PRINT);
+    }
+    
+    public function contarPedidos($termo = '', $cliente = null, $fornecedorId = null) {
+        if ($fornecedorId) {
+            $sql = "SELECT COUNT(DISTINCT p.id) as total FROM pedido p 
+                    JOIN itens_pedido ip ON ip.pedido_id = p.id
+                    JOIN produto pr ON ip.produto_id = pr.id
+                    JOIN usuario u ON p.usuario_id = u.id
+                    WHERE pr.fornecedor_id = :fornecedor_id";
+            $params = [':fornecedor_id' => $fornecedorId];
+            if ($termo) {
+                $sql .= " AND (UPPER(u.nome) LIKE :termo OR CAST(p.id AS TEXT) LIKE :termo)";
+                $params[':termo'] = '%' . strtoupper($termo) . '%';
+            }
+            if ($cliente) {
+                $sql .= " AND p.usuario_id = :cliente";
+                $params[':cliente'] = $cliente;
+            }
+            $stmt = $this->conexao->prepare($sql);
+            foreach ($params as $k => $v) {
+                $stmt->bindValue($k, $v);
+            }
+            $stmt->execute();
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $row ? (int)$row['total'] : 0;
+        } else {
+            $sql = "SELECT COUNT(*) as total FROM pedido p JOIN usuario u ON p.usuario_id = u.id WHERE 1=1";
+            $params = [];
+            if ($termo) {
+                $sql .= " AND (UPPER(u.nome) LIKE :termo OR CAST(p.id AS TEXT) LIKE :termo)";
+                $params[':termo'] = '%' . strtoupper($termo) . '%';
+            }
+            if ($cliente) {
+                $sql .= " AND p.usuario_id = :cliente";
+                $params[':cliente'] = $cliente;
+            }
+            $stmt = $this->conexao->prepare($sql);
+            foreach ($params as $k => $v) {
+                $stmt->bindValue($k, $v);
+            }
+            $stmt->execute();
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $row ? (int)$row['total'] : 0;
+        }
+    }
+
+    // --- NOVO: Criar subpedido (pedido_fornecedor) ---
+    public function criarSubpedido($pedidoId, $fornecedorId, $status = 'PENDENTE', $total = 0) {
+        try {
+            $sql = "INSERT INTO pedido_fornecedor (pedido_id, fornecedor_id, status, total, data_subpedido)
+                    VALUES (:pedido_id, :fornecedor_id, :status, :total, NOW()) RETURNING id";
+            $stmt = $this->conexao->prepare($sql);
+            $stmt->bindValue(':pedido_id', $pedidoId);
+            $stmt->bindValue(':fornecedor_id', $fornecedorId);
+            $stmt->bindValue(':status', $status);
+            $stmt->bindValue(':total', $total);
+            $stmt->execute();
+            $row = $stmt->fetch();
+            return $row['id'];
+        } catch (PDOException $e) {
+            throw new Exception("Erro ao criar subpedido: " . $e->getMessage());
+        }
+    }
+
+    // --- NOVO: Buscar subpedidos de um pedido ---
+    public function buscarSubpedidos($pedidoId) {
+        try {
+            $sql = "SELECT * FROM pedido_fornecedor WHERE pedido_id = :pedido_id";
+            $stmt = $this->conexao->prepare($sql);
+            $stmt->bindValue(':pedido_id', $pedidoId);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            throw new Exception("Erro ao buscar subpedidos: " . $e->getMessage());
+        }
+    }
+
+    // Busca pedidos do fornecedor logado, trazendo apenas o subpedido dele em cada pedido
+    public function buscarPedidosPorFornecedor($fornecedorId, $inicio = 0, $quantos = 10, $termo = '') {
+        $sql = "SELECT pf.*, p.usuario_id, p.endereco_id, p.data_pedido, p.status as status_pedido, p.total as total_pedido, u.nome as nome_usuario
+                FROM pedido_fornecedor pf
+                JOIN pedido p ON pf.pedido_id = p.id
+                JOIN usuario u ON p.usuario_id = u.id
+                WHERE pf.fornecedor_id = :fornecedor_id";
+        $params = [':fornecedor_id' => $fornecedorId];
+        if (!empty($termo)) {
+            $sql .= " AND (UPPER(u.nome) LIKE :termo OR CAST(p.id AS TEXT) LIKE :termo)";
+            $params[':termo'] = '%' . strtoupper($termo) . '%';
+        }
+        $sql .= " ORDER BY p.data_pedido DESC LIMIT :limit OFFSET :offset";
+        $stmt = $this->conexao->prepare($sql);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+        $stmt->bindValue(':limit', (int)$quantos, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int)$inicio, PDO::PARAM_INT);
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $pedidos = [];
+        foreach ($result as $row) {
+            // Busca itens do subpedido
+            $stmtItens = $this->conexao->prepare("SELECT ip.*, p.nome as produto_nome, p.foto as produto_imagem FROM itens_pedido ip JOIN produto p ON ip.produto_id = p.id WHERE ip.pedido_fornecedor_id = :subpedido_id");
+            $stmtItens->bindValue(':subpedido_id', $row['id']);
+            $stmtItens->execute();
+            $itens = $stmtItens->fetchAll(PDO::FETCH_ASSOC);
+            // Só adiciona se houver itens
+            if (count($itens) === 0) continue;
+            // Monta o pedido principal
+            $pedidoArr = [
+                'id' => $row['pedido_id'],
+                'usuarioId' => $row['usuario_id'],
+                'enderecoId' => $row['endereco_id'],
+                'dataPedido' => $row['data_pedido'],
+                'status' => $row['status_pedido'],
+                'total' => $row['total_pedido'],
+                'nomeUsuario' => $row['nome_usuario'],
+                'subpedidos' => [] 
+            ];
+            $fornecedorObj = $GLOBALS['factory']->getFornecedorDao()->buscaPorId($row['fornecedor_id']);
+            $fornecedorNome = $fornecedorObj ? $fornecedorObj->getNome() : $row['fornecedor_id'];
+            $pedidoArr['subpedidos'] = [[
+                'id' => $row['id'],
+                'fornecedor_id' => $row['fornecedor_id'],
+                'fornecedor_nome' => $fornecedorNome,
+                'status' => $row['status'],
+                'total' => $row['total'],
+                'itens' => $itens
+            ]];
+            $pedidos[] = $pedidoArr;
+        }
+        return json_encode($pedidos, JSON_PRETTY_PRINT);
     }
 }
 ?>
