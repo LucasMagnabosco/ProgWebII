@@ -362,6 +362,9 @@ class PostgresPedidoDao implements PedidoDao {
                     'fornecedor_nome' => $fornecedorNome,
                     'status' => $sub['status'],
                     'total' => $sub['total'],
+                    'data_subpedido' => $sub['data_subpedido'],
+                    'data_envio' => $sub['data_envio'],
+                    'data_cancelamento' => $sub['data_cancelamento'],
                     'itens' => $itens
                 ];
                 if ($fornecedorId) break;
@@ -440,7 +443,8 @@ class PostgresPedidoDao implements PedidoDao {
     //  Buscar subpedidos de um pedido
     public function buscarSubpedidos($pedidoId) {
         try {
-            $sql = "SELECT * FROM pedido_fornecedor WHERE pedido_id = :pedido_id";
+            $sql = "SELECT id, pedido_id, fornecedor_id, status, total, data_subpedido, data_envio, data_cancelamento 
+                    FROM pedido_fornecedor WHERE pedido_id = :pedido_id";
             $stmt = $this->conexao->prepare($sql);
             $stmt->bindValue(':pedido_id', $pedidoId);
             $stmt->execute();
@@ -453,7 +457,8 @@ class PostgresPedidoDao implements PedidoDao {
     // Busca pedidos do fornecedor logado, trazendo apenas o subpedido dele em cada pedido
     public function buscarPedidosPorFornecedor($fornecedorId, $inicio = 0, $quantos = 10, $termo = '') {
         global $factory;
-        $sql = "SELECT pf.*, p.usuario_id, p.endereco_id, p.data_pedido, p.status as status_pedido, p.total as total_pedido, u.nome as nome_usuario
+        $sql = "SELECT pf.id, pf.pedido_id, pf.fornecedor_id, pf.status, pf.total, pf.data_subpedido, pf.data_envio, pf.data_cancelamento, 
+                       p.usuario_id, p.endereco_id, p.data_pedido, p.status as status_pedido, p.total as total_pedido, u.nome as nome_usuario
                 FROM pedido_fornecedor pf
                 JOIN pedido p ON pf.pedido_id = p.id
                 JOIN usuario u ON p.usuario_id = u.id
@@ -506,6 +511,9 @@ class PostgresPedidoDao implements PedidoDao {
                 'fornecedor_nome' => $fornecedorNome,
                 'status' => $row['status'],
                 'total' => $row['total'],
+                'data_subpedido' => $row['data_subpedido'],
+                'data_envio' => $row['data_envio'],
+                'data_cancelamento' => $row['data_cancelamento'],
                 'itens' => $itens
             ]];
             $pedidos[] = $pedidoArr;
@@ -516,7 +524,17 @@ class PostgresPedidoDao implements PedidoDao {
     // Atualiza o status de um subpedido (pedido_fornecedor)
     public function atualizarStatusSubpedido($subpedidoId, $novoStatus) {
         try {
-            $sql = "UPDATE pedido_fornecedor SET status = :status WHERE id = :id";
+            $sql = "UPDATE pedido_fornecedor SET status = :status";
+            
+            // Adiciona timestamp para status ENVIADO ou CANCELADO
+            if ($novoStatus === 'ENVIADO') {
+                $sql .= ", data_envio = NOW()";
+            } elseif ($novoStatus === 'CANCELADO') {
+                $sql .= ", data_cancelamento = NOW()";
+            }
+            
+            $sql .= " WHERE id = :id";
+            
             $stmt = $this->conexao->prepare($sql);
             $stmt->bindValue(':status', $novoStatus);
             $stmt->bindValue(':id', $subpedidoId);
@@ -529,7 +547,8 @@ class PostgresPedidoDao implements PedidoDao {
     // Buscar subpedido por id
     public function buscarSubpedidoPorId($subpedidoId) {
         try {
-            $sql = "SELECT * FROM pedido_fornecedor WHERE id = :id";
+            $sql = "SELECT id, pedido_id, fornecedor_id, status, total, data_subpedido, data_envio, data_cancelamento 
+                    FROM pedido_fornecedor WHERE id = :id";
             $stmt = $this->conexao->prepare($sql);
             $stmt->bindValue(':id', $subpedidoId);
             $stmt->execute();
@@ -570,6 +589,9 @@ class PostgresPedidoDao implements PedidoDao {
                 'fornecedor_nome' => $fornecedorNome,
                 'status' => $sub['status'],
                 'total' => $sub['total'],
+                'data_subpedido' => $sub['data_subpedido'],
+                'data_envio' => $sub['data_envio'],
+                'data_cancelamento' => $sub['data_cancelamento'],
                 'itens' => $itens
             ];
         }

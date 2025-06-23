@@ -452,6 +452,15 @@ function abrirDetalhe(pedidoId) {
                     (pedido.subpedidos || []).forEach(sub => {
                         html += `<div class='mb-3 p-2 border rounded'>`;
                         html += `<div class='mb-2'><strong>Fornecedor:</strong> ${sub.fornecedor_nome || sub.fornecedor_id} &nbsp; <strong>Status:</strong> <span id='status-subpedido-${sub.id}'>${formatarStatus(sub.status)}</span>`;
+                        
+                        // Adiciona informações de data quando disponíveis
+                        if (sub.data_envio) {
+                            html += `<br><small class='text-muted'><strong>Data de Envio:</strong> ${formatarData(sub.data_envio)}</small>`;
+                        }
+                        if (sub.data_cancelamento) {
+                            html += `<br><small class='text-danger'><strong>Data de Cancelamento:</strong> ${formatarData(sub.data_cancelamento)}</small>`;
+                        }
+                        
                         if (isFornecedor) {
                             html += `
                                 <select id='novo-status-${sub.id}' class='form-select form-select-sm d-inline-block w-auto ms-2'>
@@ -554,6 +563,31 @@ function alterarStatusSubpedido(subpedidoId, novoStatus) {
     .then(res => {
         if (res.sucesso) {
             document.getElementById('status-subpedido-' + subpedidoId).innerHTML = formatarStatus(novoStatus);
+            
+            // Atualiza as informações de data se necessário
+            const statusElement = document.getElementById('status-subpedido-' + subpedidoId);
+            const parentDiv = statusElement.closest('.mb-2');
+            
+            // Remove informações de data existentes
+            const existingDates = parentDiv.querySelectorAll('small');
+            existingDates.forEach(date => date.remove());
+            
+            // Adiciona nova informação de data se aplicável
+            const now = new Date();
+            const formattedDate = now.toLocaleString('pt-BR');
+            
+            if (novoStatus === 'ENVIADO') {
+                const dateElement = document.createElement('small');
+                dateElement.className = 'text-muted d-block';
+                dateElement.innerHTML = `<strong>Data de Envio:</strong> ${formattedDate}`;
+                parentDiv.appendChild(dateElement);
+            } else if (novoStatus === 'CANCELADO') {
+                const dateElement = document.createElement('small');
+                dateElement.className = 'text-danger d-block';
+                dateElement.innerHTML = `<strong>Data de Cancelamento:</strong> ${formattedDate}`;
+                parentDiv.appendChild(dateElement);
+            }
+            
             alert('Status alterado com sucesso!');
         } else {
             alert(res.erro || 'Erro ao alterar status.');

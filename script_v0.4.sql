@@ -12,3 +12,6 @@ CREATE TABLE pedido_fornecedor (
 ALTER TABLE itens_pedido ADD COLUMN pedido_fornecedor_id INTEGER;
 ALTER TABLE itens_pedido ALTER COLUMN pedido_fornecedor_id SET NOT NULL;
 ALTER TABLE itens_pedido ADD CONSTRAINT fk_itens_pedido_fornecedor FOREIGN KEY (pedido_fornecedor_id) REFERENCES pedido_fornecedor(id) ON DELETE CASCADE;
+
+ALTER TABLE pedido_fornecedor ADD COLUMN data_envio TIMESTAMP NULL;
+ALTER TABLE pedido_fornecedor ADD COLUMN data_cancelamento TIMESTAMP NULL;
