@@ -30,8 +30,6 @@ $produtoDao = $factory->getProdutoDao();
 $produtos = $produtoDao->buscaPorFornecedorFormatados($fornecedor_id, $start, $limit, $pesquisa);
 $total_data = $produtoDao->contaPorFornecedorENome($fornecedor_id, $pesquisa);
 
-error_log("Total de registros encontrados: $total_data");
-
 $response = array(
     'produtos' => $produtos,
     'pagination' => '',

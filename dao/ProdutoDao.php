@@ -9,8 +9,9 @@ interface ProdutoDao {
     public function buscaPorFornecedor($fornecedorId);
     public function buscaTodosFormatados($inicio,$quantos);
     public function buscaTodosPaginado($inicio,$quantos);
-
     public function buscaFiltrada($termo,$inicio,$quantos);
     public function contaComNome($nome);
     public function contaTodos();
+
+    public function getFotoPorId($id);
 }

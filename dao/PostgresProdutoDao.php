@@ -33,14 +33,12 @@ class PostgresProdutoDao implements ProdutoDao
             $result = $stmt->execute();
 
             if (!$result) {
-                error_log("Erro ao inserir produto: " . print_r($stmt->errorInfo(), true));
                 return false;
             }
 
             return true;
 
         } catch (PDOException $e) {
-            error_log("Exceção ao inserir produto: " . $e->getMessage());
             return false;
         }
     }
@@ -53,6 +51,9 @@ class PostgresProdutoDao implements ProdutoDao
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($row) {
+            if (isset($row['foto']) && is_resource($row['foto'])) {
+                $row['foto'] = stream_get_contents($row['foto']);
+            }
             return new Produto(
                 $row['nome'],
                 $row['descricao'],
@@ -169,6 +170,9 @@ class PostgresProdutoDao implements ProdutoDao
         $produtos = array();
 
         foreach ($rows as $row) {
+            if (isset($row['foto']) && is_resource($row['foto'])) {
+                $row['foto'] = stream_get_contents($row['foto']);
+            }
             $produto = new Produto(
                 $row['nome'],
                 $row['descricao'],
@@ -226,6 +230,9 @@ class PostgresProdutoDao implements ProdutoDao
 
         $produtos = array();
         foreach ($rows as $row) {
+            if (isset($row['foto']) && is_resource($row['foto'])) {
+                $row['foto'] = stream_get_contents($row['foto']);
+            }
             $produto = new Produto(
                 $row['nome'],
                 $row['descricao'],
@@ -274,6 +281,9 @@ class PostgresProdutoDao implements ProdutoDao
         $produtos = array();
 
         foreach ($rows as $row) {
+            if (isset($row['foto']) && is_resource($row['foto'])) {
+                $row['foto'] = stream_get_contents($row['foto']);
+            }
             $produto = new Produto(
                 $row['nome'],
                 $row['descricao'],
@@ -364,6 +374,15 @@ class PostgresProdutoDao implements ProdutoDao
         }
         
         return $quantos;
+    }
+
+    public function getFotoPorId($id) {
+        $sql = "SELECT foto FROM produto WHERE id = :id";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row && isset($row['foto']) ? $row['foto'] : null;
     }
 
 }

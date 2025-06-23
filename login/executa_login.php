@@ -27,6 +27,14 @@ try {
         $_SESSION["usuario_nome"] = $usuario->getNome();
         $_SESSION["is_fornecedor"] = $usuario->getTipo();
         $_SESSION["is_admin"] = $usuario->isAdmin();
+        // Setar fornecedor_id na sessão se for fornecedor
+        if ($usuario->getTipo()) {
+            $fornecedorDao = $factory->getFornecedorDao();
+            $fornecedorObj = $fornecedorDao->buscaPorUsuarioId($usuario->getId());
+            if ($fornecedorObj) {
+                $_SESSION['fornecedor_id'] = $fornecedorObj->getFornecedorId() ?: $fornecedorObj->getId();
+            }
+        }
         header("Location: ../visualiza_produtos.php"); 
         exit; 
     } else {

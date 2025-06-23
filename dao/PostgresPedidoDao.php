@@ -1,7 +1,7 @@
 <?php
+require_once __DIR__ . '/../fachada.php';
 require_once 'PedidoDao.php';
 require_once __DIR__ . '/../model/Pedido.php';
-
 
 class PostgresPedidoDao implements PedidoDao {
     private $conexao;
@@ -187,6 +187,7 @@ class PostgresPedidoDao implements PedidoDao {
     }
     
     public function buscarItensPedido($pedidoId, $fornecedorId = null) {
+        global $factory;
         try {
             $sql = "SELECT ip.*, p.nome as produto_nome, p.foto as produto_imagem, p.fornecedor_id 
                     FROM itens_pedido ip 
@@ -201,7 +202,13 @@ class PostgresPedidoDao implements PedidoDao {
                 $stmt->bindValue(':fornecedor_id', $fornecedorId);
             }
             $stmt->execute();
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $itens = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($itens as &$item) {
+                // Não enviar mais produto_imagem nem produto_imagem_tipo
+                // O frontend deve buscar a imagem via get_imagem.php?id=produto_id
+            }
+            unset($item);
+            return $itens;
         } catch (PDOException $e) {
             throw new Exception("Erro ao buscar itens do pedido: " . $e->getMessage());
         }
@@ -264,6 +271,7 @@ class PostgresPedidoDao implements PedidoDao {
     }
     
     public function buscarPorCodigoOuNome($termo, $inicio = 0, $quantos = 10, $fornecedorId = null) {
+        global $factory;
         if ($fornecedorId) {
             $sql = "SELECT DISTINCT p.* FROM pedido p 
                     JOIN itens_pedido ip ON ip.pedido_id = p.id
@@ -326,6 +334,7 @@ class PostgresPedidoDao implements PedidoDao {
     }
     
     public function buscaTodosFormatados($inicio, $quantos, $termo = '', $fornecedorId = null) {
+        global $factory;
         $pedidos = $this->buscarPorCodigoOuNome($termo, $inicio, $quantos, $fornecedorId);
         $pedidosJSON = [];
         foreach ($pedidos as $pedido) {
@@ -336,13 +345,17 @@ class PostgresPedidoDao implements PedidoDao {
             foreach ($subpedidos as $sub) {
                 if ($fornecedorId && $sub['fornecedor_id'] != $fornecedorId) continue;
                 // Buscar nome do fornecedor
-                $fornecedorObj = $GLOBALS['factory']->getFornecedorDao()->buscaPorId($sub['fornecedor_id']);
+                $fornecedorObj = $factory->getFornecedorDao()->buscaPorId($sub['fornecedor_id']);
                 $fornecedorNome = $fornecedorObj ? $fornecedorObj->getNome() : $sub['fornecedor_id'];
                 // Buscar itens do subpedido
-                $stmt = $this->conexao->prepare("SELECT ip.*, p.nome as produto_nome, p.foto as produto_imagem FROM itens_pedido ip JOIN produto p ON ip.produto_id = p.id WHERE ip.pedido_fornecedor_id = :subpedido_id");
+                $stmt = $this->conexao->prepare("SELECT ip.*, p.nome as produto_nome, p.id as produto_id, p.descricao as produto_descricao, p.preco as produto_preco, p.quantidade as produto_quantidade, p.fornecedor_id as produto_fornecedor_id, p.codigo as produto_codigo FROM itens_pedido ip JOIN produto p ON ip.produto_id = p.id WHERE ip.pedido_fornecedor_id = :subpedido_id");
                 $stmt->bindValue(':subpedido_id', $sub['id']);
                 $stmt->execute();
                 $itens = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                error_log('ERRO_PEDIDO: Subpedido ' . $sub['id'] . ' tem ' . count($itens) . ' itens.');
+                foreach ($itens as &$item) {
+                    // Não processe mais nada relacionado à imagem
+                }
                 $pedidoArr['subpedidos'][] = [
                     'id' => $sub['id'],
                     'fornecedor_id' => $sub['fornecedor_id'],
@@ -353,8 +366,10 @@ class PostgresPedidoDao implements PedidoDao {
                 ];
                 if ($fornecedorId) break;
             }
-            // NOVO: só inclui o pedido se houver subpedidos para o fornecedor
-            if ($fornecedorId && count($pedidoArr['subpedidos']) === 0) continue;
+            // Só aplica o filtro se for fornecedor
+            if ($fornecedorId) {
+                if (count($pedidoArr['subpedidos']) === 0) continue;
+            }
             $pedidosJSON[] = $pedidoArr;
         }
         return json_encode($pedidosJSON, JSON_PRETTY_PRINT);
@@ -404,7 +419,7 @@ class PostgresPedidoDao implements PedidoDao {
         }
     }
 
-    // --- NOVO: Criar subpedido (pedido_fornecedor) ---
+    // Criar subpedido (pedido_fornecedor) ---
     public function criarSubpedido($pedidoId, $fornecedorId, $status = 'PENDENTE', $total = 0) {
         try {
             $sql = "INSERT INTO pedido_fornecedor (pedido_id, fornecedor_id, status, total, data_subpedido)
@@ -422,7 +437,7 @@ class PostgresPedidoDao implements PedidoDao {
         }
     }
 
-    // --- NOVO: Buscar subpedidos de um pedido ---
+    //  Buscar subpedidos de um pedido
     public function buscarSubpedidos($pedidoId) {
         try {
             $sql = "SELECT * FROM pedido_fornecedor WHERE pedido_id = :pedido_id";
@@ -437,6 +452,7 @@ class PostgresPedidoDao implements PedidoDao {
 
     // Busca pedidos do fornecedor logado, trazendo apenas o subpedido dele em cada pedido
     public function buscarPedidosPorFornecedor($fornecedorId, $inicio = 0, $quantos = 10, $termo = '') {
+        global $factory;
         $sql = "SELECT pf.*, p.usuario_id, p.endereco_id, p.data_pedido, p.status as status_pedido, p.total as total_pedido, u.nome as nome_usuario
                 FROM pedido_fornecedor pf
                 JOIN pedido p ON pf.pedido_id = p.id
@@ -459,10 +475,16 @@ class PostgresPedidoDao implements PedidoDao {
         $pedidos = [];
         foreach ($result as $row) {
             // Busca itens do subpedido
-            $stmtItens = $this->conexao->prepare("SELECT ip.*, p.nome as produto_nome, p.foto as produto_imagem FROM itens_pedido ip JOIN produto p ON ip.produto_id = p.id WHERE ip.pedido_fornecedor_id = :subpedido_id");
+            $stmtItens = $this->conexao->prepare("SELECT ip.*, p.nome as produto_nome, p.id as produto_id FROM itens_pedido ip JOIN produto p ON ip.produto_id = p.id WHERE ip.pedido_fornecedor_id = :subpedido_id");
             $stmtItens->bindValue(':subpedido_id', $row['id']);
             $stmtItens->execute();
             $itens = $stmtItens->fetchAll(PDO::FETCH_ASSOC);
+            // Garantir que produto_imagem seja sempre string ou null
+            foreach ($itens as &$item) {
+                // Não enviar mais produto_imagem nem produto_imagem_tipo
+                // O frontend deve buscar a imagem via get_imagem.php?id=produto_id
+            }
+            unset($item);
             // Só adiciona se houver itens
             if (count($itens) === 0) continue;
             // Monta o pedido principal
@@ -476,7 +498,7 @@ class PostgresPedidoDao implements PedidoDao {
                 'nomeUsuario' => $row['nome_usuario'],
                 'subpedidos' => [] 
             ];
-            $fornecedorObj = $GLOBALS['factory']->getFornecedorDao()->buscaPorId($row['fornecedor_id']);
+            $fornecedorObj = $factory->getFornecedorDao()->buscaPorId($row['fornecedor_id']);
             $fornecedorNome = $fornecedorObj ? $fornecedorObj->getNome() : $row['fornecedor_id'];
             $pedidoArr['subpedidos'] = [[
                 'id' => $row['id'],
@@ -489,6 +511,69 @@ class PostgresPedidoDao implements PedidoDao {
             $pedidos[] = $pedidoArr;
         }
         return json_encode($pedidos, JSON_PRETTY_PRINT);
+    }
+
+    // Atualiza o status de um subpedido (pedido_fornecedor)
+    public function atualizarStatusSubpedido($subpedidoId, $novoStatus) {
+        try {
+            $sql = "UPDATE pedido_fornecedor SET status = :status WHERE id = :id";
+            $stmt = $this->conexao->prepare($sql);
+            $stmt->bindValue(':status', $novoStatus);
+            $stmt->bindValue(':id', $subpedidoId);
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            throw new Exception("Erro ao atualizar status do subpedido: " . $e->getMessage());
+        }
+    }
+
+    // Buscar subpedido por id
+    public function buscarSubpedidoPorId($subpedidoId) {
+        try {
+            $sql = "SELECT * FROM pedido_fornecedor WHERE id = :id";
+            $stmt = $this->conexao->prepare($sql);
+            $stmt->bindValue(':id', $subpedidoId);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            throw new Exception("Erro ao buscar subpedido: " . $e->getMessage());
+        }
+    }
+
+    public function detalharPedido($id, $fornecedorId = null) {
+        global $factory;
+        $pedido = $this->buscarPorId($id);
+        if (!$pedido) return null;
+        $usuarioDao = $factory->getUsuarioDao();
+        $usuario = $usuarioDao->buscaPorId($pedido->getUsuarioId());
+        $pedidoArr = $pedido->toJson();
+        $pedidoArr['nomeUsuario'] = $usuario ? $usuario->getNome() : '';
+        // Buscar subpedidos
+        $subpedidos = $this->buscarSubpedidos($pedido->getId());
+        $pedidoArr['subpedidos'] = [];
+        foreach ($subpedidos as $sub) {
+            if ($fornecedorId && $sub['fornecedor_id'] != $fornecedorId) continue;
+            // Buscar nome do fornecedor
+            $fornecedorObj = $factory->getFornecedorDao()->buscaPorId($sub['fornecedor_id']);
+            $fornecedorNome = $fornecedorObj ? $fornecedorObj->getNome() : $sub['fornecedor_id'];
+            // Buscar itens do subpedido
+            $stmt = $factory->getConnection()->prepare("SELECT ip.*, p.nome as produto_nome, p.descricao as produto_descricao, p.preco as produto_preco, p.quantidade as produto_quantidade, p.fornecedor_id as produto_fornecedor_id, p.codigo as produto_codigo, p.id as produto_id FROM itens_pedido ip JOIN produto p ON ip.produto_id = p.id WHERE ip.pedido_fornecedor_id = :subpedido_id");
+            $stmt->bindValue(':subpedido_id', $sub['id']);
+            $stmt->execute();
+            $itens = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($itens as &$item) {
+                // Não enviar mais produto_imagem nem produto_imagem_tipo
+                // O frontend deve buscar a imagem via get_imagem.php?id=produto_id
+            }
+            $pedidoArr['subpedidos'][] = [
+                'id' => $sub['id'],
+                'fornecedor_id' => $sub['fornecedor_id'],
+                'fornecedor_nome' => $fornecedorNome,
+                'status' => $sub['status'],
+                'total' => $sub['total'],
+                'itens' => $itens
+            ];
+        }
+        return json_encode($pedidoArr, JSON_PRETTY_PRINT);
     }
 }
 ?>

@@ -99,6 +99,8 @@ function formatarStatus($status) {
     max-width: 60%;
     max-height: 100%;
     z-index: 2;
+    opacity: 1;
+    transform: scale(1);
 }
 
 .carousel-slide img.side {
@@ -107,14 +109,17 @@ function formatarStatus($status) {
     opacity: 0.6;
     transform: scale(0.8);
     z-index: 1;
+    transition: all 0.5s;
 }
 
-.carousel-slide img.left {
-    margin-right: -15%;
+.carousel-slide img.side.left {
+    margin-right: 0;
+    transform: scale(0.8) translateX(-60%);
 }
 
-.carousel-slide img.right {
-    margin-left: -15%;
+.carousel-slide img.side.right {
+    margin-left: 0;
+    transform: scale(0.8) translateX(60%);
 }
 
 .carousel-button {
@@ -214,26 +219,6 @@ function formatarStatus($status) {
     color: #fff;
 }
 
-<?php if ($isAdmin): ?>
-<style>
-.autocomplete-suggestions {
-    position: absolute;
-    background: #fff;
-    border: 1px solid #ccc;
-    z-index: 1000;
-    max-height: 200px;
-    overflow-y: auto;
-    width: 250px;
-}
-.autocomplete-suggestion {
-    padding: 6px 12px;
-    cursor: pointer;
-}
-.autocomplete-suggestion:hover {
-    background: #f0f0f0;
-}
-</style>
-<?php endif; ?>
 </style>
 
 <div class="container mt-4">
@@ -258,7 +243,7 @@ function formatarStatus($status) {
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body" id="detalhePedidoBody">
-        <!-- Detalhes AJAX -->
+        <!-- AJAX -->
       </div>
     </div>
   </div>
@@ -268,6 +253,7 @@ function formatarStatus($status) {
 const usuarioId = <?php echo json_encode($_SESSION['usuario_id']); ?>;
 const isAdmin = <?php echo json_encode($isAdmin); ?>;
 const isFornecedor = <?php echo json_encode($isFornecedor); ?>;
+const fornecedorId = <?php echo json_encode($fornecedorIdJs); ?>;
 const ITENS_API = '../api/pedidosREST.php';
 const ITENS_DETALHE_API = '../api/pedidosREST.php';
 const ITENS_POR_PAGINA = 4;
@@ -282,6 +268,9 @@ function carregarPedidos(pagina = 1) {
     if (!isAdmin && !isFornecedor) {
         url += `&cliente=${usuarioId}`;
     }
+    if (isFornecedor && fornecedorId && fornecedorId !== 'null' && fornecedorId !== null && fornecedorId !== undefined && fornecedorId !== '') {
+        url += `&fornecedor=${fornecedorId}`;
+    }
     fetch(url)
         .then(r => {
             if (!r.ok) throw new Error('Erro ao buscar pedidos');
@@ -290,11 +279,8 @@ function carregarPedidos(pagina = 1) {
         .then(res => {
             document.getElementById('loading').style.display = 'none';
             let pedidos = res && res.pedidos ? res.pedidos : [];
-            // Para fornecedor, mostrar apenas pedidos com subpedidos do fornecedor logado
-            if (isFornecedor) {
-                pedidos = pedidos.filter(function(p) {
-                    return Array.isArray(p.subpedidos) && p.subpedidos.length > 0;
-                });
+            if (isFornecedor && fornecedorId) {
+                // Não precisa filtrar novamente, pois a API já retorna só os subpedidos do fornecedor
             }
             if (pedidos.length > 0) {
                 renderPedidos(pedidos);
@@ -321,7 +307,6 @@ function renderPedidos(pedidos) {
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Pedido #${pedido.id}</h5>
-                    ${formatarStatus(pedido.status)}
                 </div>
                 <div class="card-body">
                     <p class="card-text">
@@ -390,12 +375,6 @@ function abrirDetalhe(pedidoId) {
         })
         .then(pedido => {
             document.getElementById('loading').style.display = 'none';
-            let html = `<div><strong>Pedido #${pedido.id}</strong><br>
-                        <strong>Data:</strong> ${formatarData(pedido.dataPedido)}<br>
-                        <strong>Status:</strong> ${formatarStatus(pedido.status)}<br>
-                        <strong>Total:</strong> R$ ${parseFloat(pedido.total).toLocaleString('pt-BR', {minimumFractionDigits: 2})}<br>
-                        <strong>Cliente:</strong> ${pedido.nomeUsuario || pedido.usuarioId}</div><hr>`;
-            html += '<h6>Itens do Pedido:</h6>';
             let subpedidos = pedido.subpedidos || [];
             if (isFornecedor) {
                 // Só mostrar subpedidos do fornecedor logado
@@ -403,30 +382,125 @@ function abrirDetalhe(pedidoId) {
                 subpedidos = subpedidos.filter(sub => sub.fornecedor_id == fornecedorId);
             }
             if (subpedidos.length > 0) {
-                subpedidos.forEach(sub => {
-                    html += `<div class='mb-3 p-2 border rounded'>`;
-                    html += `<strong>Fornecedor:</strong> ${sub.fornecedor_nome} | <strong>Status:</strong> ${formatarStatus(sub.status)} | <strong>Total:</strong> R$ ${parseFloat(sub.total).toLocaleString('pt-BR', {minimumFractionDigits: 2})}<br>`;
-                    html += `<table class='table table-sm mt-2'><thead><tr><th>Produto</th><th>Quantidade</th><th>Preço Unitário</th><th>Subtotal</th></tr></thead><tbody>`;
-                    if (sub.itens && sub.itens.length > 0) {
-                        sub.itens.forEach(item => {
-                            html += `<tr>`;
-                            html += `<td>${item.produto_nome}</td>`;
-                            html += `<td>${item.quantidade}</td>`;
-                            html += `<td>R$ ${parseFloat(item.preco_unitario).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>`;
-                            html += `<td>R$ ${(item.quantidade * item.preco_unitario).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>`;
-                            html += `</tr>`;
+                let todasImagens = [];
+                const promises = [];
+
+                (pedido.subpedidos || []).forEach(sub => {
+    if (sub.itens && sub.itens.length > 0) {
+        sub.itens.forEach(item => {
+            const url = `get_imagem.php?id=${item.produto_id}`;
+            promises.push(
+                fetch(url)
+                    .then(response => response.text())
+                    .then(dataUrl => {
+                        todasImagens.push(dataUrl.trim());
+                        
+                    })
+                    .catch(err => {
+                        console.error('Erro ao carregar imagem:', err);
+                        todasImagens.push('../assets/imagem-default.jpg');
+                                    })
+                            );
                         });
-                    } else {
-                        html += `<tr><td colspan='4'>Nenhum item encontrado para este subpedido.</td></tr>`;
                     }
-                    html += `</tbody></table></div>`;
+                });
+
+                Promise.all(promises).then(() => {
+
+                    carrosselIndices[pedido.id] = 0;
+                    let html = `<div><strong>Pedido #${pedido.id}</strong><br>
+                        <strong>Data:</strong> ${formatarData(pedido.dataPedido)}<br>
+                        <strong>Total:</strong> R$ ${parseFloat(pedido.total).toLocaleString('pt-BR', {minimumFractionDigits: 2})}<br>
+                        <strong>Cliente:</strong> ${pedido.nomeUsuario || pedido.usuarioId}</div><hr>`;
+                    html += '<h6>Itens do Pedido:</h6>';
+                    if (todasImagens.length > 0) {
+                        html += `<div class='carousel-container' id='carousel-pedido-${pedido.id}'>`;
+                        if (todasImagens.length > 1) {
+                            html += `<button class='carousel-button carousel-prev' onclick='mudarSlide(${pedido.id}, -1)'>&lt;</button>`;
+                        }
+                        for (let idx = 0; idx < todasImagens.length; idx++) {
+                            // Inicialmente, o primeiro é main, o último é left, o segundo é right
+                            let classes = '';
+                            let display = 'none';
+                            if (idx === 0) {
+                                classes = 'main';
+                                display = 'flex';
+                            } else if (idx === todasImagens.length - 1 && todasImagens.length > 1) {
+                                classes = 'side left';
+                                display = 'flex';
+                            } else if (idx === 1 && todasImagens.length > 1) {
+                                classes = 'side right';
+                                display = 'flex';
+                            }
+                            html += `<div class='carousel-slide' data-idx='${idx}' style='display:${display};'>`;
+                            html += `<img src="${todasImagens[idx]}" alt="Produto" class="${classes}" onerror="this.src='../assets/imagem-default.jpg'">`;
+                            html += `</div>`;
+                        }
+                        if (todasImagens.length > 1) {
+                            html += `<button class='carousel-button carousel-next' onclick='mudarSlide(${pedido.id}, 1)'>&gt;</button>`;
+                        }
+                        html += `</div>`;
+                        if (todasImagens.length > 1) {
+                            html += `<div class='carousel-indicators'>`;
+                            for (let idx = 0; idx < todasImagens.length; idx++) {
+                                html += `<span class='carousel-indicator${idx===0?' active':''}' onclick='irParaSlide(${pedido.id}, ${idx})'></span>`;
+                            }
+                            html += `</div>`;
+                        }
+                    }
+                    // Renderiza o restante dos detalhes do pedido normalmente
+                    (pedido.subpedidos || []).forEach(sub => {
+                        html += `<div class='mb-3 p-2 border rounded'>`;
+                        html += `<div class='mb-2'><strong>Fornecedor:</strong> ${sub.fornecedor_nome || sub.fornecedor_id} &nbsp; <strong>Status:</strong> <span id='status-subpedido-${sub.id}'>${formatarStatus(sub.status)}</span>`;
+                        if (isFornecedor) {
+                            html += `
+                                <select id='novo-status-${sub.id}' class='form-select form-select-sm d-inline-block w-auto ms-2'>
+                                    <option value='PENDENTE' ${sub.status==='PENDENTE'?'selected':''}>Pendente</option>
+                                    <option value='APROVADO' ${sub.status==='APROVADO'?'selected':''}>Aprovado</option>
+                                    <option value='EM_PREPARACAO' ${sub.status==='EM_PREPARACAO'?'selected':''}>Em Preparação</option>
+                                    <option value='ENVIADO' ${sub.status==='ENVIADO'?'selected':''}>Enviado</option>
+                                    <option value='ENTREGUE' ${sub.status==='ENTREGUE'?'selected':''}>Entregue</option>
+                                    <option value='CANCELADO' ${sub.status==='CANCELADO'?'selected':''}>Cancelado</option>
+                                </select>
+                                <button class='btn btn-sm btn-outline-primary ms-1' onclick='alterarStatusSubpedido(${sub.id}, document.getElementById("novo-status-${sub.id}").value)'>Alterar Status</button>
+                            `;
+                        }
+                        html += `</div>`;
+                        html += `<table class='table table-sm mt-2'><thead><tr><th>Produto</th><th>Descrição</th><th>Quantidade</th><th>Preço Unitário</th><th>Subtotal</th></tr></thead><tbody>`;
+                        let temItens = false;
+                        if (sub.itens && sub.itens.length > 0) {
+                            sub.itens.forEach(item => {
+                                temItens = true;
+                                html += `<tr>`;
+                                html += `<td>${item.produto_nome}</td>`;
+                                html += `<td>${item.produto_descricao || ''}</td>`;
+                                html += `<td>${item.quantidade}</td>`;
+                                html += `<td>R$ ${parseFloat(item.preco_unitario).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>`;
+                                html += `<td>R$ ${(item.quantidade * item.preco_unitario).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>`;
+                                html += `</tr>`;
+                            });
+                        }
+                        if (!temItens) {
+                            html += `<tr><td colspan='5'>Nenhum item encontrado para este fornecedor.</td></tr>`;
+                        }
+                        html += `</tbody></table>`;
+                        html += `</div>`;
+                    });
+                    document.getElementById('detalhePedidoBody').innerHTML = html;
+                    var modal = new bootstrap.Modal(document.getElementById('modalDetalhe'));
+                    modal.show();
                 });
             } else {
+                let html = `<div><strong>Pedido #${pedido.id}</strong><br>
+                        <strong>Data:</strong> ${formatarData(pedido.dataPedido)}<br>
+                        <strong>Total:</strong> R$ ${parseFloat(pedido.total).toLocaleString('pt-BR', {minimumFractionDigits: 2})}<br>
+                        <strong>Cliente:</strong> ${pedido.nomeUsuario || pedido.usuarioId}</div><hr>`;
+                html += '<h6>Itens do Pedido:</h6>';
                 html += '<div class="alert alert-warning">Nenhum item encontrado para este pedido.</div>';
+                document.getElementById('detalhePedidoBody').innerHTML = html;
+                var modal = new bootstrap.Modal(document.getElementById('modalDetalhe'));
+                modal.show();
             }
-            document.getElementById('detalhePedidoBody').innerHTML = html;
-            var modal = new bootstrap.Modal(document.getElementById('modalDetalhe'));
-            modal.show();
         })
         .catch(err => {
             document.getElementById('loading').style.display = 'none';
@@ -467,6 +541,100 @@ document.addEventListener('DOMContentLoaded', function() {
     carregarPedidos();
     document.getElementById('busca-termo').addEventListener('keyup', debounceCarregarPedidos);
 });
+
+//alterar status do subpedido
+function alterarStatusSubpedido(subpedidoId, novoStatus) {
+    if (!confirm('Tem certeza que deseja alterar o status?')) return;
+    fetch('atualizar_status_subpedido.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subpedido_id: subpedidoId, status: novoStatus })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.sucesso) {
+            document.getElementById('status-subpedido-' + subpedidoId).innerHTML = formatarStatus(novoStatus);
+            alert('Status alterado com sucesso!');
+        } else {
+            alert(res.erro || 'Erro ao alterar status.');
+        }
+    })
+    .catch(() => alert('Erro ao alterar status.'));
+}
+
+// Adicionar funções JS para o carrossel
+let carrosselIndices = {};
+function mudarSlide(subId, dir) {
+    const container = document.getElementById('carousel-pedido-' + subId);
+    if (!container) return;
+    const slides = container.querySelectorAll('.carousel-slide');
+    const indicators = container.querySelectorAll('.carousel-indicator');
+    if (!slides.length) return;
+    if (typeof carrosselIndices[subId] !== 'number' || carrosselIndices[subId] < 0 || carrosselIndices[subId] >= slides.length) {
+        carrosselIndices[subId] = 0;
+    }
+    let idx = carrosselIndices[subId];
+    slides[idx].style.display = 'none';
+    if (indicators[idx]) indicators[idx].classList.remove('active');
+    // Remove classes de todos
+    slides.forEach((slide, i) => {
+        const img = slide.querySelector('img');
+        if (img) img.className = '';
+    });
+    idx = (idx + dir + slides.length) % slides.length;
+    slides.forEach((slide, i) => {
+        slide.style.display = 'none';
+    });
+    // Central
+    slides[idx].style.display = 'flex';
+    const imgMain = slides[idx].querySelector('img');
+    if (imgMain) imgMain.className = 'main';
+    // Esquerda
+    const leftIdx = (idx - 1 + slides.length) % slides.length;
+    slides[leftIdx].style.display = 'flex';
+    const imgLeft = slides[leftIdx].querySelector('img');
+    if (imgLeft) imgLeft.className = 'side left';
+    // Direita
+    const rightIdx = (idx + 1) % slides.length;
+    slides[rightIdx].style.display = 'flex';
+    const imgRight = slides[rightIdx].querySelector('img');
+    if (imgRight) imgRight.className = 'side right';
+    if (indicators[idx]) indicators[idx].classList.add('active');
+    carrosselIndices[subId] = idx;
+}
+function irParaSlide(subId, idx) {
+    const container = document.getElementById('carousel-pedido-' + subId);
+    if (!container) return;
+    const slides = container.querySelectorAll('.carousel-slide');
+    const indicators = container.querySelectorAll('.carousel-indicator');
+    if (!slides.length) return;
+    if (typeof carrosselIndices[subId] !== 'number' || carrosselIndices[subId] < 0 || carrosselIndices[subId] >= slides.length) {
+        carrosselIndices[subId] = 0;
+    }
+    let atual = carrosselIndices[subId];
+    slides.forEach((slide, i) => {
+        slide.style.display = 'none';
+        const img = slide.querySelector('img');
+        if (img) img.className = '';
+    });
+    // Central
+    slides[idx].style.display = 'flex';
+    const imgMain = slides[idx].querySelector('img');
+    if (imgMain) imgMain.className = 'main';
+    // Esquerda
+    const leftIdx = (idx - 1 + slides.length) % slides.length;
+    slides[leftIdx].style.display = 'flex';
+    const imgLeft = slides[leftIdx].querySelector('img');
+    if (imgLeft) imgLeft.className = 'side left';
+    // Direita
+    const rightIdx = (idx + 1) % slides.length;
+    slides[rightIdx].style.display = 'flex';
+    const imgRight = slides[rightIdx].querySelector('img');
+    if (imgRight) imgRight.className = 'side right';
+    if (indicators[atual]) indicators[atual].classList.remove('active');
+    if (indicators[idx]) indicators[idx].classList.add('active');
+    carrosselIndices[subId] = idx;
+}
 </script>
 
 <?php include_once '../layout_footer.php'; ?> 

@@ -89,20 +89,27 @@ class Produto {
 
     public function toJson(): array {
         $foto = $this->foto;
-        if (is_resource($foto)) {
-            $foto = stream_get_contents($foto);
-        }
-        
         $fotoBase64 = null;
         $fotoTipo = null;
-        
-        if ($foto) {
-            // Detecta o tipo da imagem
-            $finfo = new finfo(FILEINFO_MIME_TYPE);
-            $fotoTipo = $finfo->buffer($foto);
-            $fotoBase64 = base64_encode($foto);
+        try {
+            if (is_resource($foto)) {
+                $foto = stream_get_contents($foto);
+            }
+            if ($foto && is_string($foto)) {
+                // Detecta o tipo da imagem
+                $finfo = new finfo(FILEINFO_MIME_TYPE);
+                $fotoTipo = @$finfo->buffer($foto) ?: null;
+                $fotoBase64 = @base64_encode($foto) ?: null;
+                // Se base64_encode falhar, retorna null
+                if ($fotoBase64 === false) {
+                    $fotoBase64 = null;
+                }
+            }
+        } catch (Throwable $e) {
+            // Em caso de erro, retorna null para foto e tipo
+            $fotoBase64 = null;
+            $fotoTipo = null;
         }
-        
         return [
             'id' => $this->id,
             'nome' => $this->nome,

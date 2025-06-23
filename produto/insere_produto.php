@@ -89,8 +89,6 @@ try {
     }
 
 } catch (Exception $e) {
-    error_log("Erro ao cadastrar produto: " . $e->getMessage());
-
     if ($isAjax) {
         jsonResponse("error", $e->getMessage());
     } else {

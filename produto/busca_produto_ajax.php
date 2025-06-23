@@ -117,9 +117,6 @@ $pagination .= '</ul></nav>';
 
 $response['pagination'] = $pagination;
 
-// Debug
-error_log("Resposta final: " . print_r($response, true));
-
 header('Content-Type: application/json');
 echo json_encode($response);
 ?>

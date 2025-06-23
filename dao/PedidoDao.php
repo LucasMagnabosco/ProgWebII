@@ -17,5 +17,8 @@ interface PedidoDao {
     public function contarPedidos($termo = '', $cliente = null, $fornecedorId = null);
     public function criarSubpedido($pedidoId, $fornecedorId, $status = 'PENDENTE', $total = 0);
     public function buscarSubpedidos($pedidoId);
+  
+    public function atualizarStatusSubpedido($subpedidoId, $novoStatus);
+    public function detalharPedido($id, $fornecedorId = null);
 }
 ?> 

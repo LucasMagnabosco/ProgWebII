@@ -22,9 +22,6 @@ if (!$fornecedor) {
     exit();
 }
 
-error_log("Fornecedor encontrado - ID do usuário: " . $fornecedor->getId() . 
-          ", ID do fornecedor: " . $fornecedor->getFornecedorId());
-
 $page_title = "Meus Produtos";
 include_once '../layout_header.php';
 ?>

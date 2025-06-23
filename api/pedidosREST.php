@@ -1,5 +1,8 @@
 <?php
 header('Content-Type: application/json');
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require_once '../fachada.php';
 
 $pedidoDao = $factory->getPedidoDao();
@@ -10,44 +13,18 @@ $id = isset($_GET['id']) ? intval($_GET['id']) : null;
 switch ($method) {
     case 'GET':
         if ($id) {
-            $pedido = $pedidoDao->buscarPorId($id);
-            if ($pedido) {
-                $usuarioDao = $factory->getUsuarioDao();
-                $usuario = $usuarioDao->buscaPorId($pedido->getUsuarioId());
-                $pedidoArr = $pedido->toJson();
-                $pedidoArr['nomeUsuario'] = $usuario ? $usuario->getNome() : '';
-                // Buscar subpedidos
-                $subpedidos = $pedidoDao->buscarSubpedidos($pedido->getId());
-                $fornecedorId = null;
-                if (isset($_SESSION['is_fornecedor']) && $_SESSION['is_fornecedor']) {
-                    $fornecedorDao = $factory->getFornecedorDao();
-                    $fornecedor = $fornecedorDao->buscaPorUsuarioId($_SESSION['usuario_id']);
-                    if ($fornecedor) {
-                        $fornecedorId = $fornecedor->getFornecedorId() ?: $fornecedor->getId();
-                    }
+            $fornecedorId = null;
+            if (isset($_SESSION['is_fornecedor']) && $_SESSION['is_fornecedor']) {
+                $fornecedorDao = $factory->getFornecedorDao();
+                $fornecedor = $fornecedorDao->buscaPorUsuarioId($_SESSION['usuario_id']);
+                if ($fornecedor) {
+                    $fornecedorId = $fornecedor->getFornecedorId() ?: $fornecedor->getId();
                 }
-                $pedidoArr['subpedidos'] = [];
-                foreach ($subpedidos as $sub) {
-                    if ($fornecedorId && $sub['fornecedor_id'] != $fornecedorId) continue;
-                    // Buscar nome do fornecedor
-                    $fornecedorObj = $factory->getFornecedorDao()->buscaPorId($sub['fornecedor_id']);
-                    $fornecedorNome = $fornecedorObj ? $fornecedorObj->getNome() : $sub['fornecedor_id'];
-                    // Buscar itens do subpedido
-                    $stmt = $factory->getConnection()->prepare("SELECT ip.*, p.nome as produto_nome, p.foto as produto_imagem FROM itens_pedido ip JOIN produto p ON ip.produto_id = p.id WHERE ip.pedido_fornecedor_id = :subpedido_id");
-                    $stmt->bindValue(':subpedido_id', $sub['id']);
-                    $stmt->execute();
-                    $itens = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                    $pedidoArr['subpedidos'][] = [
-                        'id' => $sub['id'],
-                        'fornecedor_id' => $sub['fornecedor_id'],
-                        'fornecedor_nome' => $fornecedorNome,
-                        'status' => $sub['status'],
-                        'total' => $sub['total'],
-                        'itens' => $itens
-                    ];
-                }
+            }
+            $json = $pedidoDao->detalharPedido($id, $fornecedorId);
+            if ($json) {
                 http_response_code(200);
-                echo json_encode($pedidoArr);
+                echo $json;
             } else {
                 http_response_code(404);
                 echo json_encode(['erro' => 'Pedido não encontrado']);
@@ -64,7 +41,7 @@ switch ($method) {
                 // Requisição para um fornecedor específico
                 $isFornecedor = isset($_SESSION['is_fornecedor']) && $_SESSION['is_fornecedor'];
                 $isAdmin = isset($_SESSION['is_admin']) && $_SESSION['is_admin'];
-                // Validação de segurança
+     
                 if ($isFornecedor) {
                     $fornecedorDao = $factory->getFornecedorDao();
                     $fornecedorSessao = $fornecedorDao->buscaPorUsuarioId($_SESSION['usuario_id']);
@@ -76,7 +53,8 @@ switch ($method) {
                             $fornecedorSessaoId = $fornecedorSessao->getId();
                         }
                     }
-                    if ($fornecedorIdParam != $fornecedorSessaoId) {
+                    
+                    if ((int)$fornecedorIdParam !== (int)$fornecedorSessaoId) {
                         http_response_code(403);
                         echo json_encode(['erro' => 'Acesso negado.']);
                         exit;
@@ -99,6 +77,9 @@ switch ($method) {
                 $totalRegistros = $pedidoDao->contarPedidos($termo, $cliente, null);
                 $json = $pedidoDao->buscaTodosFormatados($inicio, $limite, $termo, null);
                 $pedidos = json_decode($json, true);
+                if (!is_array($pedidos)) {
+                    $pedidos = [];
+                }
                 if ($cliente) {
                     $pedidos = array_filter($pedidos, function($p) use ($cliente) {
                         return $p['usuarioId'] == $cliente;
