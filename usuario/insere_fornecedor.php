@@ -36,6 +36,13 @@ try {
         if ($usuarioCriado) {
             $_SESSION['usuario_id'] = $usuarioCriado->getId();
             $_SESSION['usuario_nome'] = $usuarioCriado->getNome();
+            $_SESSION['is_fornecedor'] = $usuarioCriado->getTipo();
+            $_SESSION['is_admin'] = $usuarioCriado->isAdmin();
+            // Buscar o fornecedor_id e salvar na sessão
+            $fornecedorObj = $fornecedorDao->buscaPorUsuarioId($usuarioCriado->getId());
+            if ($fornecedorObj) {
+                $_SESSION['fornecedor_id'] = method_exists($fornecedorObj, 'getFornecedorId') ? $fornecedorObj->getFornecedorId() : $fornecedorObj->getId();
+            }
             header("Location: ../endereco/novo_endereco.php");
         } else {
             header("Location: novo_fornecedor.php?msg=Erro ao cadastrar fornecedor&tipo=danger");
