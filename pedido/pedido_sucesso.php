@@ -93,8 +93,8 @@ include_once '../layout_header.php';
                         $fornecedorDao = $factory->getFornecedorDao();
                         $isFornecedor = isset($_SESSION['is_fornecedor']) && $_SESSION['is_fornecedor'];
                         foreach ($subpedidos as $sub) {
-                            if ($isFornecedor && $sub['fornecedor_id'] != $fornecedor->getFornecedorId()) continue;
                             $fornecedor = $fornecedorDao->buscaPorId($sub['fornecedor_id']);
+                            if ($isFornecedor && $sub['fornecedor_id'] != $fornecedor->getFornecedorId()) continue;
                             echo '<div class="mb-3 p-2 border rounded">';
                             echo '<strong>Fornecedor:</strong> ' . htmlspecialchars($fornecedor ? $fornecedor->getNome() : $sub['fornecedor_id']) . ' | ';
                             echo '<strong>Status:</strong> ' . htmlspecialchars($sub['status']) . ' | ';
