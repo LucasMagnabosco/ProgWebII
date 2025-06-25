@@ -352,7 +352,6 @@ class PostgresPedidoDao implements PedidoDao {
                 $stmt->bindValue(':subpedido_id', $sub['id']);
                 $stmt->execute();
                 $itens = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                error_log('ERRO_PEDIDO: Subpedido ' . $sub['id'] . ' tem ' . count($itens) . ' itens.');
                 foreach ($itens as &$item) {
                     // Não processe mais nada relacionado à imagem
                 }

@@ -84,8 +84,25 @@ class Usuario {
     }
 
     public function setTipo($tipo) {
-        $this->tipo = $tipo;
+        // Converte para boolean de forma mais robusta
+        if (is_string($tipo)) {
+            $this->tipo = ($tipo === '1' || $tipo === 'true' || $tipo === 't' || $tipo === 'TRUE');
+        } elseif (is_numeric($tipo)) {
+            $this->tipo = ($tipo == 1);
+        } elseif (is_bool($tipo)) {
+            $this->tipo = $tipo;
+        } elseif ($tipo === null) {
+            $this->tipo = false;
+        } else {
+            $this->tipo = (bool)$tipo;
+        }
     }
+
+    public function setSenha(string $senha) {
+        $this->senha = $senha;
+        return $this;
+    }
+
     public function adicionarEndereco($endereco) {
         $this->endereco = $endereco;
         return $this;

@@ -66,7 +66,6 @@ $(document).ready(function() {
     let termo = '';
 
     function loadData(page = 1) {
-        console.log('Carregando dados - Página:', page, 'Termo:', termo);
         $.ajax({
             url: 'busca_produtos_fornecedor_ajax.php',
             method: 'POST',
@@ -76,7 +75,6 @@ $(document).ready(function() {
                 fornecedor_id: <?php echo $fornecedor->getFornecedorId(); ?>
             },
             success: function(data) {
-                console.log('Dados recebidos:', data);
                 let html = '';
                 
                 if (data.produtos) {
@@ -109,9 +107,6 @@ $(document).ready(function() {
                 $('#pagination').html(data.pagination);
             },
             error: function(xhr, status, error) {
-                console.error('Erro na requisição:', error);
-                console.log('Status:', status);
-                console.log('Resposta:', xhr.responseText);
                 $('#listaProdutos').html('<tr><td colspan="4" class="text-center text-danger">Erro ao carregar produtos</td></tr>');
             }
         });
@@ -120,7 +115,6 @@ $(document).ready(function() {
     // listener para pesquisa
     $('#pesquisa').on('keyup', function() {
         termo = $(this).val();
-        console.log('Termo de pesquisa:', termo);
         atual = 1;
         loadData(atual);
     });
@@ -128,7 +122,6 @@ $(document).ready(function() {
     // Adiciona um listener para o evento de input também
     $('#pesquisa').on('input', function() {
         termo = $(this).val();
-        console.log('Termo de pesquisa (input):', termo);
         atual = 1;
         loadData(atual);
     });
@@ -136,7 +129,6 @@ $(document).ready(function() {
     // Adiciona um listener para o evento de change também
     $('#pesquisa').on('change', function() {
         termo = $(this).val();
-        console.log('Termo de pesquisa (change):', termo);
         atual = 1;
         loadData(atual);
     });

@@ -65,10 +65,8 @@ class PostgresFornecedorDao extends PostgresDao implements FornecedorDao {
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if ($row) {
-            error_log("Fornecedor encontrado: " . print_r($row, true));
             return $this->criarFornecedor($row);
         }
-        error_log("Nenhum fornecedor encontrado para o usuário ID: " . $usuarioId);
         return null;
     }
 
@@ -124,9 +122,9 @@ class PostgresFornecedorDao extends PostgresDao implements FornecedorDao {
                     WHERE usuario_id = :usuario_id";
             $stmt = $this->conn->prepare($sql);
             
-            $stmt->bindParam(":cnpj", $fornecedor->getCnpj());
-            $stmt->bindParam(":descricao", $fornecedor->getDescricao());
-            $stmt->bindParam(":usuario_id", $fornecedor->getId());
+            $stmt->bindValue(":cnpj", $fornecedor->getCnpj());
+            $stmt->bindValue(":descricao", $fornecedor->getDescricao());
+            $stmt->bindValue(":usuario_id", $fornecedor->getId(), PDO::PARAM_INT);
             
             if (!$stmt->execute()) {
                 throw new Exception("Erro ao atualizar fornecedor");
@@ -163,8 +161,6 @@ class PostgresFornecedorDao extends PostgresDao implements FornecedorDao {
     }
 
     private function criarFornecedor($row) {
-        error_log("Criando fornecedor com dados: " . print_r($row, true));
-        
         $fornecedor = new Fornecedor(
             $row['nome'],
             $row['email'],
@@ -181,9 +177,6 @@ class PostgresFornecedorDao extends PostgresDao implements FornecedorDao {
         if (isset($row['fornecedor_id'])) {
             $fornecedor->setFornecedorId($row['fornecedor_id']);
         }
-        
-        error_log("Fornecedor criado - ID do usuário: " . $fornecedor->getId() . 
-                 ", ID do fornecedor: " . $fornecedor->getFornecedorId());
         
         return $fornecedor;
     }

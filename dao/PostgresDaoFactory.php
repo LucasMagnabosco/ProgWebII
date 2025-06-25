@@ -24,6 +24,11 @@ class PostgresDaofactory extends DaoFactory {
         try{
             $this->conn = new PDO("pgsql:host=" . $this->host . ";port=" . $this->port . ";dbname=" . $this->db_name, $this->username, $this->password);
             //$this->conn = new PDO("pgsql:host=localhost;port=5432;dbname=PHP_tutorial", $this->username, $this->password);
+            
+            // Configurações básicas do PDO
+            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $this->conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+            $this->conn->setAttribute(PDO::ATTR_AUTOCOMMIT, true);
     
       }catch(PDOException $exception){
             echo "Connection error: " . $exception->getMessage();

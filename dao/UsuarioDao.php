@@ -16,5 +16,6 @@ interface UsuarioDao {
     public function buscaFiltrada($nome, $inicio, $quantos);
     public function contaTodos();
     public function contaComNome($nome);
+    public function alteraDadosBasicos($usuario);
 }
 ?>

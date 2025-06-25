@@ -70,56 +70,54 @@ function formatarStatus($status) {
 ?>
 
 <style>
+/* Estilos para o carrossel */
 .carousel-container {
     position: relative;
     width: 100%;
     height: 300px;
     overflow: hidden;
-    margin: 10px 0;
     border-radius: 8px;
-    background: #f8f9fa;
+    margin: 20px 0;
 }
 
 .carousel-slide {
     position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: all 0.5s ease-in-out;
 }
 
 .carousel-slide img {
-    transition: all 0.5s ease-in-out;
-    object-fit: contain;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+    transition: all 0.3s ease;
 }
 
 .carousel-slide img.main {
-    max-width: 60%;
-    max-height: 100%;
+    width: 60%;
+    height: 80%;
     z-index: 2;
-    opacity: 1;
-    transform: scale(1);
 }
 
 .carousel-slide img.side {
-    max-width: 30%;
-    max-height: 80%;
-    opacity: 0.6;
-    transform: scale(0.8);
+    width: 30%;
+    height: 60%;
+    opacity: 0.7;
     z-index: 1;
-    transition: all 0.5s;
 }
 
 .carousel-slide img.side.left {
-    margin-right: 0;
-    transform: scale(0.8) translateX(-60%);
+    transform: translateX(-20px);
 }
 
 .carousel-slide img.side.right {
-    margin-left: 0;
-    transform: scale(0.8) translateX(60%);
+    transform: translateX(20px);
 }
 
 .carousel-button {
@@ -131,17 +129,14 @@ function formatarStatus($status) {
     border: none;
     padding: 10px 15px;
     cursor: pointer;
-    z-index: 10;
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    z-index: 3;
+    font-size: 18px;
+    transition: all 0.3s ease;
 }
 
 .carousel-button:hover {
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.7);
 }
 
 .carousel-prev {
@@ -153,72 +148,280 @@ function formatarStatus($status) {
 }
 
 .carousel-indicators {
-    position: absolute;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
     display: flex;
+    justify-content: center;
     gap: 5px;
-    z-index: 10;
+    margin-top: 10px;
 }
 
 .carousel-indicator {
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.5);
+    background: #ccc;
     cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .carousel-indicator.active {
-    background: white;
-}
-
-.single-product-image {
-    width: 100%;
-    height: 300px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: #f8f9fa;
-    border-radius: 8px;
-    margin: 10px 0;
-}
-
-.single-product-image img {
-    max-width: 60%;
-    max-height: 100%;
-    object-fit: contain;
-}
-
-.slide-group {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: all 0.5s ease-in-out;
-}
-
-.paginacao {
-    display: flex;
-    justify-content: center;
-    margin: 20px 0;
-    gap: 5px;
-}
-.paginacao button {
-    border: none;
-    background: #eee;
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-}
-.paginacao button.active {
     background: #007bff;
-    color: #fff;
 }
 
+/* Estilos responsivos para mobile */
+@media (max-width: 768px) {
+    .carousel-container {
+        height: 200px;
+    }
+    
+    .carousel-slide img.main {
+        width: 80%;
+        height: 90%;
+    }
+    
+    .carousel-slide img.side {
+        width: 25%;
+        height: 50%;
+    }
+    
+    .carousel-button {
+        padding: 8px 12px;
+        font-size: 16px;
+    }
+    
+    /* Cards responsivos para itens do pedido */
+    .item-card {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 10px;
+    }
+    
+    .item-card .item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    
+    .item-card .item-title {
+        font-weight: bold;
+        color: #495057;
+        font-size: 16px;
+    }
+    
+    .item-card .item-price {
+        font-weight: bold;
+        color: #28a745;
+        font-size: 14px;
+    }
+    
+    .item-card .item-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        font-size: 14px;
+    }
+    
+    .item-card .item-detail {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .item-card .item-detail-label {
+        font-weight: 600;
+        color: #6c757d;
+        font-size: 12px;
+        text-transform: uppercase;
+    }
+    
+    .item-card .item-detail-value {
+        color: #495057;
+    }
+    
+    .item-card .item-description {
+        margin-top: 10px;
+        padding: 8px;
+        background: white;
+        border-radius: 4px;
+        font-size: 13px;
+        color: #6c757d;
+    }
+    
+    /* Melhorias para controles de status em mobile */
+    .status-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    
+    .status-controls .form-select {
+        width: 100% !important;
+        margin-left: 0 !important;
+    }
+    
+    .status-controls .btn {
+        width: 100%;
+    }
+    
+    /* Modal responsivo */
+    .modal-dialog {
+        margin: 10px;
+        max-width: calc(100% - 20px);
+    }
+    
+    .modal-body {
+        padding: 15px;
+    }
+    
+    /* Melhorias gerais para mobile */
+    .container {
+        padding: 10px;
+    }
+    
+    .card {
+        margin-bottom: 15px;
+    }
+    
+    .card-header h5 {
+        font-size: 16px;
+    }
+    
+    .card-body p {
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+    
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+    
+    /* Melhorias para busca */
+    .d-flex.align-items-center.gap-2 {
+        flex-direction: column;
+        gap: 10px !important;
+    }
+    
+    .d-flex.align-items-center.gap-2 input {
+        width: 100%;
+    }
+    
+    .d-flex.align-items-center.gap-2 button {
+        width: 100%;
+    }
+    
+    /* Melhorias para paginação */
+    .pagination {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .pagination .page-link {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+    
+    /* Melhorias para modal */
+    .modal-title {
+        font-size: 18px;
+    }
+    
+    .modal-body {
+        font-size: 14px;
+    }
+    
+    .modal-body h6 {
+        font-size: 16px;
+        margin-top: 15px;
+    }
+    
+    /* Melhorias para carrossel em mobile */
+    .carousel-container {
+        margin: 15px 0;
+    }
+    .carousel-indicators {
+        margin-top: 8px;
+    }
+    .carousel-indicator {
+        width: 8px;
+        height: 8px;
+    }
+    
+    /* Melhorias para cards de pedidos */
+    .row .col-md-6 {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+    .card {
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .card-header {
+        padding: 12px 15px;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+    }
+    .card-body {
+        padding: 15px;
+    } 
+    .card-text {
+        line-height: 1.5;
+    }
+    .card-text strong {
+        color: #495057;
+    }
+    
+    /* Melhorias para badges de status */
+    .badge {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+    /* Melhorias para informações de data */
+    small {
+        font-size: 12px;
+        line-height: 1.4;
+    }
+    
+    /* Melhorias para controles de status em mobile */
+    .status-controls {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 6px;
+        margin-top: 10px;
+    } 
+    .status-controls .form-select {
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+    } 
+    .status-controls .btn {
+        border-radius: 4px;
+        font-weight: 500;
+    }
+}
+
+/* Estilos para desktop */
+@media (min-width: 769px) {
+    .item-card {
+        display: none; /* Esconde cards em desktop */
+    }
+    .table-responsive {
+        display: block; /* Mostra tabela em desktop */
+    }
+}
+
+/* Esconde tabela em mobile */
+@media (max-width: 768px) {
+    .table-responsive {
+        display: none;
+    }
+    .item-card {
+        display: block;
+    }
+}
 </style>
 
 <div class="container mt-4">
@@ -462,8 +665,9 @@ function abrirDetalhe(pedidoId) {
                         }
                         
                         if (isFornecedor) {
+                            html += `<div class="status-controls">`;
                             html += `
-                                <select id='novo-status-${sub.id}' class='form-select form-select-sm d-inline-block w-auto ms-2'>
+                                <select id='novo-status-${sub.id}' class='form-select form-select-sm'>
                                     <option value='PENDENTE' ${sub.status==='PENDENTE'?'selected':''}>Pendente</option>
                                     <option value='APROVADO' ${sub.status==='APROVADO'?'selected':''}>Aprovado</option>
                                     <option value='EM_PREPARACAO' ${sub.status==='EM_PREPARACAO'?'selected':''}>Em Preparação</option>
@@ -471,10 +675,14 @@ function abrirDetalhe(pedidoId) {
                                     <option value='ENTREGUE' ${sub.status==='ENTREGUE'?'selected':''}>Entregue</option>
                                     <option value='CANCELADO' ${sub.status==='CANCELADO'?'selected':''}>Cancelado</option>
                                 </select>
-                                <button class='btn btn-sm btn-outline-primary ms-1' onclick='alterarStatusSubpedido(${sub.id}, document.getElementById("novo-status-${sub.id}").value)'>Alterar Status</button>
+                                <button class='btn btn-sm btn-outline-primary' onclick='alterarStatusSubpedido(${sub.id}, document.getElementById("novo-status-${sub.id}").value)'>Alterar Status</button>
                             `;
+                            html += `</div>`;
                         }
                         html += `</div>`;
+                        
+                        // Tabela para desktop
+                        html += `<div class="table-responsive">`;
                         html += `<table class='table table-sm mt-2'><thead><tr><th>Produto</th><th>Descrição</th><th>Quantidade</th><th>Preço Unitário</th><th>Subtotal</th></tr></thead><tbody>`;
                         let temItens = false;
                         if (sub.itens && sub.itens.length > 0) {
@@ -493,6 +701,40 @@ function abrirDetalhe(pedidoId) {
                             html += `<tr><td colspan='5'>Nenhum item encontrado para este fornecedor.</td></tr>`;
                         }
                         html += `</tbody></table>`;
+                        html += `</div>`;
+                        
+                        // Cards responsivos para mobile
+                        html += `<div class="item-cards">`;
+                        if (sub.itens && sub.itens.length > 0) {
+                            sub.itens.forEach(item => {
+                                const subtotal = (item.quantidade * item.preco_unitario).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                                html += `<div class="item-card">`;
+                                html += `<div class="item-header">`;
+                                html += `<div class="item-title">${item.produto_nome}</div>`;
+                                html += `<div class="item-price">R$ ${subtotal}</div>`;
+                                html += `</div>`;
+                                html += `<div class="item-details">`;
+                                html += `<div class="item-detail">`;
+                                html += `<div class="item-detail-label">Quantidade</div>`;
+                                html += `<div class="item-detail-value">${item.quantidade}</div>`;
+                                html += `</div>`;
+                                html += `<div class="item-detail">`;
+                                html += `<div class="item-detail-label">Preço Unit.</div>`;
+                                html += `<div class="item-detail-value">R$ ${parseFloat(item.preco_unitario).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>`;
+                                html += `</div>`;
+                                html += `</div>`;
+                                if (item.produto_descricao) {
+                                    html += `<div class="item-description">${item.produto_descricao}</div>`;
+                                }
+                                html += `</div>`;
+                            });
+                        } else {
+                            html += `<div class="item-card">`;
+                            html += `<div class="text-center text-muted">Nenhum item encontrado para este fornecedor.</div>`;
+                            html += `</div>`;
+                        }
+                        html += `</div>`;
+                        
                         html += `</div>`;
                     });
                     document.getElementById('detalhePedidoBody').innerHTML = html;

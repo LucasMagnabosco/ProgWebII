@@ -143,15 +143,12 @@ $fornecedoresArr = array_map(function ($f) {
                 page: page
             },
             success: function (data) {
-                console.log('Dados recebidos:', data); // Debug
                 exibirProdutos(data.produtos);
                 if (data.pagination) {
                     $('#pagination-container').html(data.pagination);
                 }
             },
             error: function(xhr, status, error) {
-                console.error('Erro na requisição:', error);
-                console.log('Resposta do servidor:', xhr.responseText);
             }
         });
     }

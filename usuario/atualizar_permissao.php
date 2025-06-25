@@ -36,11 +36,12 @@ try {
 
     // Não permite remover o último admin
     if (!$isAdmin && $usuario->isAdmin()) {
-        $totalAdmins = 0;
-        $todosUsuarios = $factory->getUsuarioDao()->buscaTodos();
-        foreach ($todosUsuarios as $u) {
-            if ($u->isAdmin()) $totalAdmins++;
-        }
+        $sql = "SELECT COUNT(*) as total FROM usuario WHERE is_admin = true";
+        $stmt = $factory->getConnection()->prepare($sql);
+        $stmt->execute();
+        $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
+        $totalAdmins = $resultado['total'];
+        
         if ($totalAdmins <= 1) {
             throw new Exception('Não é possível remover o último administrador do sistema');
         }

@@ -20,7 +20,6 @@ if($page > 1) {
 $usuarios = $dao->buscaFiltrada($palavra, $start, $limit);
 $total_data = $dao->contaComNome($palavra);
 
-
 $response = array(
     'usuarios' => $usuarios,
     'pagination' => '',
