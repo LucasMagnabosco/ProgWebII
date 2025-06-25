@@ -1,0 +1,7 @@
+RewriteEngine On
+
+RewriteRule ^pedidos/([0-9]+)$ pedidosREST.php?id=$1 [QSA,L]
+
+RewriteRule ^pedidos$ pedidosREST.php [QSA,L]
+
+RewriteRule ^pedidos/([0-9]+)$ pedidosREST.php?id=$1 [QSA,L]
