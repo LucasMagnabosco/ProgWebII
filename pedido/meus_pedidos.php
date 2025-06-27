@@ -75,7 +75,7 @@ function formatarStatus($status) {
     position: relative;
     width: 100%;
     height: 300px;
-    overflow: hidden;
+    overflow: visible;
     border-radius: 8px;
     margin: 20px 0;
 }
@@ -94,7 +94,7 @@ function formatarStatus($status) {
 .carousel-slide img {
     max-width: 100%;
     max-height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     border-radius: 8px;
     transition: all 0.3s ease;
 }
@@ -103,6 +103,7 @@ function formatarStatus($status) {
     width: 60%;
     height: 80%;
     z-index: 2;
+    object-fit: contain;
 }
 
 .carousel-slide img.side {
@@ -110,14 +111,15 @@ function formatarStatus($status) {
     height: 60%;
     opacity: 0.7;
     z-index: 1;
+    object-fit: contain;
 }
 
 .carousel-slide img.side.left {
-    transform: translateX(-20px);
+    transform: translateX(-60px);
 }
 
 .carousel-slide img.side.right {
-    transform: translateX(20px);
+    transform: translateX(60px);
 }
 
 .carousel-button {
@@ -130,7 +132,7 @@ function formatarStatus($status) {
     padding: 10px 15px;
     cursor: pointer;
     border-radius: 50%;
-    z-index: 3;
+    z-index: 10;
     font-size: 18px;
     transition: all 0.3s ease;
 }
@@ -171,16 +173,27 @@ function formatarStatus($status) {
 @media (max-width: 768px) {
     .carousel-container {
         height: 200px;
+        overflow: visible;
     }
     
     .carousel-slide img.main {
         width: 80%;
         height: 90%;
+        object-fit: contain;
     }
     
     .carousel-slide img.side {
         width: 25%;
         height: 50%;
+        object-fit: contain;
+    }
+    
+    .carousel-slide img.side.left {
+        transform: translateX(-35px);
+    }
+    
+    .carousel-slide img.side.right {
+        transform: translateX(35px);
     }
     
     .carousel-button {
@@ -628,12 +641,14 @@ function abrirDetalhe(pedidoId) {
                             if (idx === 0) {
                                 classes = 'main';
                                 display = 'flex';
-                            } else if (idx === todasImagens.length - 1 && todasImagens.length > 1) {
-                                classes = 'side left';
-                                display = 'flex';
-                            } else if (idx === 1 && todasImagens.length > 1) {
-                                classes = 'side right';
-                                display = 'flex';
+                            } else if (todasImagens.length > 1) {
+                                if (idx === todasImagens.length - 1) {
+                                    classes = 'side left';
+                                    display = 'flex';
+                                } else if (idx === 1) {
+                                    classes = 'side right';
+                                    display = 'flex';
+                                }
                             }
                             html += `<div class='carousel-slide' data-idx='${idx}' style='display:${display};'>`;
                             html += `<img src="${todasImagens[idx]}" alt="Produto" class="${classes}" onerror="this.src='../assets/imagem-default.jpg'">`;
@@ -846,68 +861,95 @@ function mudarSlide(subId, dir) {
     const slides = container.querySelectorAll('.carousel-slide');
     const indicators = container.querySelectorAll('.carousel-indicator');
     if (!slides.length) return;
+    
+    // Inicializa o índice se necessário
     if (typeof carrosselIndices[subId] !== 'number' || carrosselIndices[subId] < 0 || carrosselIndices[subId] >= slides.length) {
         carrosselIndices[subId] = 0;
     }
+    
     let idx = carrosselIndices[subId];
-    slides[idx].style.display = 'none';
+    
+    // Remove indicador ativo
     if (indicators[idx]) indicators[idx].classList.remove('active');
-    // Remove classes de todos
+    
+    // Remove classes de todos os slides
     slides.forEach((slide, i) => {
         const img = slide.querySelector('img');
         if (img) img.className = '';
-    });
-    idx = (idx + dir + slides.length) % slides.length;
-    slides.forEach((slide, i) => {
         slide.style.display = 'none';
     });
-    // Central
+    
+    // Calcula novo índice
+    idx = (idx + dir + slides.length) % slides.length;
+    
+    // Exibe slide central
     slides[idx].style.display = 'flex';
     const imgMain = slides[idx].querySelector('img');
     if (imgMain) imgMain.className = 'main';
-    // Esquerda
-    const leftIdx = (idx - 1 + slides.length) % slides.length;
-    slides[leftIdx].style.display = 'flex';
-    const imgLeft = slides[leftIdx].querySelector('img');
-    if (imgLeft) imgLeft.className = 'side left';
-    // Direita
-    const rightIdx = (idx + 1) % slides.length;
-    slides[rightIdx].style.display = 'flex';
-    const imgRight = slides[rightIdx].querySelector('img');
-    if (imgRight) imgRight.className = 'side right';
+    
+    // Exibe slide esquerdo se houver mais de uma imagem
+    if (slides.length > 1) {
+        const leftIdx = (idx - 1 + slides.length) % slides.length;
+        slides[leftIdx].style.display = 'flex';
+        const imgLeft = slides[leftIdx].querySelector('img');
+        if (imgLeft) imgLeft.className = 'side left';
+        
+        // Exibe slide direito
+        const rightIdx = (idx + 1) % slides.length;
+        slides[rightIdx].style.display = 'flex';
+        const imgRight = slides[rightIdx].querySelector('img');
+        if (imgRight) imgRight.className = 'side right';
+    }
+    
+    // Atualiza indicador ativo
     if (indicators[idx]) indicators[idx].classList.add('active');
     carrosselIndices[subId] = idx;
 }
+
 function irParaSlide(subId, idx) {
     const container = document.getElementById('carousel-pedido-' + subId);
     if (!container) return;
     const slides = container.querySelectorAll('.carousel-slide');
     const indicators = container.querySelectorAll('.carousel-indicator');
     if (!slides.length) return;
+    
+    // Inicializa o índice se necessário
     if (typeof carrosselIndices[subId] !== 'number' || carrosselIndices[subId] < 0 || carrosselIndices[subId] >= slides.length) {
         carrosselIndices[subId] = 0;
     }
+    
     let atual = carrosselIndices[subId];
+    
+    // Remove indicador ativo atual
+    if (indicators[atual]) indicators[atual].classList.remove('active');
+    
+    // Remove classes de todos os slides
     slides.forEach((slide, i) => {
-        slide.style.display = 'none';
         const img = slide.querySelector('img');
         if (img) img.className = '';
+        slide.style.display = 'none';
     });
-    // Central
+    
+    // Exibe slide central
     slides[idx].style.display = 'flex';
     const imgMain = slides[idx].querySelector('img');
     if (imgMain) imgMain.className = 'main';
-    // Esquerda
-    const leftIdx = (idx - 1 + slides.length) % slides.length;
-    slides[leftIdx].style.display = 'flex';
-    const imgLeft = slides[leftIdx].querySelector('img');
-    if (imgLeft) imgLeft.className = 'side left';
-    // Direita
-    const rightIdx = (idx + 1) % slides.length;
-    slides[rightIdx].style.display = 'flex';
-    const imgRight = slides[rightIdx].querySelector('img');
-    if (imgRight) imgRight.className = 'side right';
-    if (indicators[atual]) indicators[atual].classList.remove('active');
+    
+    // Exibe slide esquerdo se houver mais de uma imagem
+    if (slides.length > 1) {
+        const leftIdx = (idx - 1 + slides.length) % slides.length;
+        slides[leftIdx].style.display = 'flex';
+        const imgLeft = slides[leftIdx].querySelector('img');
+        if (imgLeft) imgLeft.className = 'side left';
+        
+        // Exibe slide direito
+        const rightIdx = (idx + 1) % slides.length;
+        slides[rightIdx].style.display = 'flex';
+        const imgRight = slides[rightIdx].querySelector('img');
+        if (imgRight) imgRight.className = 'side right';
+    }
+    
+    // Atualiza indicador ativo
     if (indicators[idx]) indicators[idx].classList.add('active');
     carrosselIndices[subId] = idx;
 }
