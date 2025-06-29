@@ -18,7 +18,8 @@ try {
     }
     
     $senhaHash = md5($senha);
-    $usuario = new Usuario($nome, $email, $senhaHash, $telefone, $tipo);
+    $usuario = new Usuario($nome, $email, $senhaHash, $telefone);
+    $usuario->setTipo($tipo);
     
     if ($dao->insere($usuario)) {
         $usuarioCriado = $dao->buscaPorEmail($email);
@@ -26,13 +27,17 @@ try {
             $_SESSION['usuario_id'] = $usuarioCriado->getId();
             $_SESSION['usuario_nome'] = $usuarioCriado->getNome();
             header("Location: ../visualiza_produtos.php");
+            exit;
         } else {
             header("Location: novo_usuario.php?msg=Erro ao cadastrar usuário&tipo=danger");
+            exit;
         }
     } else {
         header("Location: novo_usuario.php?msg=Erro ao cadastrar usuário&tipo=danger");
+        exit;
     }
 } catch(Exception $e) {
-    header("Location: novo_usuario.php?msg=" . $e->getMessage() . "&tipo=danger");
+    header("Location: novo_usuario.php?msg=" . urlencode($e->getMessage()) . "&tipo=danger");
+    exit;
 }
 ?>
