@@ -1,3 +1,11 @@
+-- =====================================================
+-- SCRIPT COMPLETO DO SISTEMA - TODAS AS VERSÕES COMBINADAS
+-- =====================================================
+
+-- =====================================================
+-- 1. CRIAÇÃO DAS TABELAS PRINCIPAIS
+-- =====================================================
+
 CREATE TABLE endereco (
     id SERIAL PRIMARY KEY,
     rua VARCHAR(255) NOT NULL,
@@ -18,6 +26,7 @@ CREATE TABLE usuario (
     endereco_id INT,
     tipo BOOLEAN NOT NULL DEFAULT FALSE,
     cartao_credito VARCHAR(19),
+    is_admin BOOLEAN NOT NULL DEFAULT FALSE,
     FOREIGN KEY (endereco_id) REFERENCES endereco(id)
 );
 
@@ -33,7 +42,7 @@ CREATE TABLE produto (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(255) NOT NULL,
     descricao TEXT,
-    foto VARCHAR(255),
+    foto BYTEA,
     quantidade INT NOT NULL DEFAULT 0,
     preco DECIMAL(10,2) NOT NULL DEFAULT 0.00 CHECK (preco >= 0),
     fornecedor_id INT NOT NULL,
@@ -49,10 +58,66 @@ CREATE TABLE estoque (
     FOREIGN KEY (produto_id) REFERENCES produto(id)
 );
 
--- Cria índice para otimizar buscas por código e fornecedor
+-- =====================================================
+-- 2. CRIAÇÃO DAS TABELAS DE PEDIDOS
+-- =====================================================
+
+CREATE TABLE pedido (
+    id SERIAL PRIMARY KEY,
+    usuario_id INTEGER NOT NULL,
+    data_pedido TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDENTE',
+    total DECIMAL(10,2) NOT NULL DEFAULT 0,
+    endereco_id INT NOT NULL,
+    FOREIGN KEY (usuario_id) REFERENCES usuario(id),
+    FOREIGN KEY (endereco_id) REFERENCES endereco(id)
+);
+
+CREATE TABLE pedido_fornecedor (
+    id SERIAL PRIMARY KEY,
+    pedido_id INTEGER NOT NULL,
+    fornecedor_id INTEGER NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDENTE',
+    total DECIMAL(10,2) NOT NULL DEFAULT 0,
+    data_subpedido TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    data_envio TIMESTAMP NULL,
+    data_cancelamento TIMESTAMP NULL,
+    FOREIGN KEY (pedido_id) REFERENCES pedido(id) ON DELETE CASCADE,
+    FOREIGN KEY (fornecedor_id) REFERENCES fornecedor(id)
+);
+
+CREATE TABLE itens_pedido (
+    id SERIAL PRIMARY KEY,
+    pedido_id INTEGER NOT NULL,
+    produto_id INTEGER NOT NULL,
+    quantidade INTEGER NOT NULL,
+    preco_unitario DECIMAL(10,2) NOT NULL,
+    pedido_fornecedor_id INTEGER,
+    FOREIGN KEY (pedido_id) REFERENCES pedido(id) ON DELETE CASCADE,
+    FOREIGN KEY (produto_id) REFERENCES produto(id),
+    FOREIGN KEY (pedido_fornecedor_id) REFERENCES pedido_fornecedor(id) ON DELETE CASCADE
+);
+
+-- =====================================================
+-- 3. ÍNDICES PARA OTIMIZAÇÃO
+-- =====================================================
+
+-- Índice para otimizar buscas por código e fornecedor
 CREATE INDEX idx_produto_codigo_fornecedor ON produto(codigo, fornecedor_id);
 
+-- Índices para pedidos
+CREATE INDEX idx_pedido_usuario ON pedido(usuario_id);
+CREATE INDEX idx_pedido_status ON pedido(status);
+CREATE INDEX idx_itens_pedido_pedido ON itens_pedido(pedido_id);
+CREATE INDEX idx_itens_pedido_produto ON itens_pedido(produto_id);
+
+-- =====================================================
+-- 4. INSERÇÃO DE DADOS DE EXEMPLO
+-- =====================================================
+
 -- Inserção de dados de exemplo
+-- Todas senhas são 123 (MD5: 202cb962ac59075b964b07152d234b70)
+
 -- Usuários fornecedores
 --
 --Todas senhas são 123
@@ -113,3 +178,15 @@ INSERT INTO produto (nome, descricao, fornecedor_id, preco, quantidade, codigo) 
 ('1984', 'Romance distópico de George Orwell', 5, 34.99, 80, 'LIVR003'),
 ('A Arte da Guerra', 'Tratado militar de Sun Tzu', 5, 19.99, 120, 'LIVR004'),
 ('O Hobbit', 'Fantasia de J.R.R. Tolkien', 5, 39.99, 90, 'LIVR005');
+
+-- =====================================================
+-- 5. INSERÇÃO DO USUÁRIO ADMINISTRADOR
+-- =====================================================
+
+-- Inserindo o primeiro usuário administrador
+INSERT INTO usuario (nome, email, senha, telefone, tipo, is_admin) 
+VALUES ('Administrador', 'admin@sistema.com', '202cb962ac59075b964b07152d234b70', '(11) 99999-9999', FALSE, TRUE);
+
+-- =====================================================
+-- FIM DO SCRIPT
+-- =====================================================
