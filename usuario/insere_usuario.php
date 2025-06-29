@@ -6,7 +6,7 @@ $nome = $_POST['nome'];
 $email = $_POST['email'];
 $senha = $_POST['senha'];
 $telefone = $_POST['telefone'];
-$tipo = $_POST['tipo'];
+$tipo = isset($_POST['tipo']) ? $_POST['tipo'] : false;
 
 try {
     $dao = $factory->getUsuarioDao();

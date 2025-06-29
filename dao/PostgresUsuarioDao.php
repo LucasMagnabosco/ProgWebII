@@ -267,14 +267,16 @@ class PostgresUsuarioDao extends PostgresDao implements UsuarioDao
         
         // Converte is_admin da mesma forma
         $isAdminConvertido = false;
-        if (is_string($row['is_admin'])) {
-            $isAdminConvertido = ($row['is_admin'] === '1' || $row['is_admin'] === 'true' || $row['is_admin'] === 't' || $row['is_admin'] === 'TRUE');
-        } elseif (is_numeric($row['is_admin'])) {
-            $isAdminConvertido = ($row['is_admin'] == 1);
-        } elseif (is_bool($row['is_admin'])) {
-            $isAdminConvertido = $row['is_admin'];
-        } else {
-            $isAdminConvertido = (bool)$row['is_admin'];
+        if (isset($row['is_admin'])) {
+            if (is_string($row['is_admin'])) {
+                $isAdminConvertido = ($row['is_admin'] === '1' || $row['is_admin'] === 'true' || $row['is_admin'] === 't' || $row['is_admin'] === 'TRUE');
+            } elseif (is_numeric($row['is_admin'])) {
+                $isAdminConvertido = ($row['is_admin'] == 1);
+            } elseif (is_bool($row['is_admin'])) {
+                $isAdminConvertido = $row['is_admin'];
+            } else {
+                $isAdminConvertido = (bool)$row['is_admin'];
+            }
         }
         
         $usuario->setIsAdmin($isAdminConvertido);
