@@ -46,11 +46,14 @@ try {
             header("Location: ../endereco/novo_endereco.php");
         } else {
             header("Location: novo_fornecedor.php?msg=Erro ao cadastrar fornecedor&tipo=danger");
+            exit;
         }
     } else {
         header("Location: novo_fornecedor.php?msg=Erro ao cadastrar fornecedor&tipo=danger");
+        exit;
     }
 } catch(Exception $e) {
     header("Location: novo_fornecedor.php?msg=" . urlencode($e->getMessage()) . "&tipo=danger");
+    exit;
 }
 ?> 

@@ -26,6 +26,8 @@ try {
         if ($usuarioCriado) {
             $_SESSION['usuario_id'] = $usuarioCriado->getId();
             $_SESSION['usuario_nome'] = $usuarioCriado->getNome();
+            $_SESSION['is_fornecedor'] = $usuarioCriado->getTipo();
+            $_SESSION['is_admin'] = $usuarioCriado->isAdmin();
             header("Location: ../visualiza_produtos.php");
             exit;
         } else {
