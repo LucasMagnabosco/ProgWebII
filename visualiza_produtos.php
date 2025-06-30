@@ -104,7 +104,7 @@ $fornecedoresArr = array_map(function ($f) {
                     <div class="card produto-card h-100">
                         <img 
                             src="${imageUrl}" 
-                            class="produto-imagem" 
+                            class="produto-imagem mt-4 mx-3" 
                             alt="${produto.nome}"
                             onerror="this.src='./assets/imagem-default.jpg'"
                         >
